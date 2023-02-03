@@ -1,0 +1,213 @@
+Subject,Detection,Start,End,Duration,Justification
+S1,1,20,50,31,Eye Contact
+S1,2,74,89,16,Eye Contact
+S1,3,117,200,84,Eye Contact
+S1,4,230,243,14,Eye Contact
+S1,5,270,296,27,Eye Contact
+S1,6,361,372,12,Eye Contact
+S1,7,415,426,12,Eye Contact
+S1,8,460,479,20,Eye Contact
+S1,9,522,539,18,Eye Contact
+S1,10,622,638,17,Eye Contact
+S1,11,663,674,12,Showing Emotions
+S1,12,680,691,12,Showing Emotions
+S1,13,798,809,12,Eye Contact
+S1,14,870,881,12,Sudden Eye Change
+S1,15,1025,1049,25,Eye Contact
+S1,16,1125,1136,12,Eye Contact
+S1,17,1213,1224,12,Eye Contact
+S1,18,1351,1362,12,Eye Contact
+S1,19,1422,1433,12,Sudden Eye Change
+S1,20,1555,1580,26,Showing Emotions
+S1,21,1688,1708,21,Eye Contact
+S1,22,1872,1883,12,Eye Contact
+S1,23,1983,1994,12,Eye Contact
+S1,24,2075,2104,30,Eye Contact
+S1,25,2280,2304,25,Eye Contact
+S1,26,2512,2524,13,Eye Contact
+S1,27,2562,2581,20,Showing Emotions
+S1,28,2717,2729,13,Eye Contact
+S1,29,2832,2851,20,Eye Contact
+S1,30,2907,2938,32,Eye Contact
+S1,31,3015,3026,12,Eye Contact
+S1,32,3107,3118,12,Sudden Eye Change
+S1,33,3191,3214,24,Eye Contact
+S1,34,3329,3340,12,Eye Contact
+S1,35,3399,3410,12,Eye Contact
+S1,36,3485,3501,17,Eye Contact
+S1,37,3610,3629,20,Eye Contact
+S1,38,3802,3822,21,Eye Contact
+S1,39,3942,3955,14,Showing Emotions
+S1,40,4056,4067,12,Eye Contact
+S1,41,4210,4228,19,Eye Contact
+S1,42,4340,4393,54,Smiling
+S2,1,6,34,29,Smiling
+S2,2,75,93,19,Eye Contact
+S2,3,117,164,48,Eye Contact
+S2,4,220,241,22,Showing Emotions
+S2,5,285,308,24,Eye Contact
+S2,6,360,378,19,Showing Emotions
+S2,7,475,486,12,Eye Contact
+S2,8,569,578,10,Eye Contact
+S2,9,634,641,8,Eye Contact
+S2,10,690,717,28,Eye Contact
+S2,11,761,776,16,Eye Contact
+S2,12,919,928,10,Eye Contact
+S2,13,980,997,18,Not Looking
+S2,14,1110,1117,8,Eye Contact
+S2,15,1162,1174,13,Eye Contact
+S2,16,1291,1301,11,Eye Contact
+S2,17,1363,1374,12,Eye Contact
+S2,18,1398,1409,12,Eye Contact
+S2,19,1500,1511,12,Showing Emotions
+S2,20,1521,1528,8,Eye Contact
+S2,21,1587,1601,15,Eye Contact
+S2,22,1663,1686,24,Showing Emotions
+S2,23,1742,1750,9,Eye Contact
+S2,24,1795,1810,16,Eye Contact
+S2,25,1874,1892,19,Eye Contact
+S2,26,1985,1996,12,Eye Contact
+S2,27,2122,2130,9,Eye Contact
+S2,28,2155,2169,15,Eye Contact
+S2,29,2308,2316,9,Eye Contact
+S2,30,2344,2356,13,Eye Contact
+S2,31,2391,2397,7,Eye Contact
+S2,32,2456,2465,10,Not Looking
+S2,33,2534,2537,4,Eye Contact
+S2,34,2579,2590,12,Eye Contact
+S2,35,2727,2736,10,Eye Contact
+S2,36,2762,2774,13,Eye Contact
+S2,37,2819,2832,14,Eye Contact
+S2,38,2918,2928,11,Eye Contact
+S2,39,2983,3002,20,Not Looking
+S2,40,3061,3095,35,Eye Contact
+S2,41,3148,3163,16,Eye Contact
+S2,42,3218,3225,8,Eye Contact
+S2,43,3281,3292,12,Showing Emotions
+S2,44,3328,3335,8,Eye Contact
+S2,45,3360,3377,18,Eye Contact
+S2,46,3432,3466,35,Eye Contact
+S2,47,3600,3617,18,Eye Contact
+S2,48,3680,3696,17,Eye Contact
+S2,49,3746,3761,16,Showing Emotions
+S2,50,3827,3850,24,Eye Contact
+S2,51,3950,3958,9,Eye Contact
+S2,52,4044,4052,9,Eye Contact
+S2,53,4229,4240,12,Eye Contact
+S2,54,4275,4289,15,Eye Contact
+S2,55,4363,4410,48,Eye Contact
+S2,56,4532,4540,9,Eye Contact
+S2,57,4728,4739,12,Eye Contact
+S2,58,4777,4792,16,Eye Contact
+S2,59,4845,4854,10,Eye Contact
+S2,60,4930,4943,14,Eye Contact
+S2,61,4959,5033,75,Smiling
+S3,1,20,31,12,Sudden Eye Change
+S3,2,63,128,66,Eye Contact
+S3,3,154,185,32,Eye Contact
+S3,4,189,228,40,Eye Contact
+S3,5,280,285,6,Eye Contact
+S3,6,361,372,12,Eye Contact
+S3,7,438,445,8,Eye Contact
+S3,8,477,486,10,Eye Contact
+S3,9,538,546,9,Eye Contact
+S3,10,601,612,12,Eye Contact
+S3,11,652,663,12,Eye Contact
+S3,12,687,696,10,Eye Contact
+S3,13,735,746,12,Sudden Eye Change
+S3,14,790,798,9,Eye Contact
+S3,15,832,843,12,Eye Contact
+S3,16,959,966,8,Eye Contact
+S3,17,1005,1017,13,Showing Emotions
+S3,18,1105,1109,5,Eye Contact
+S3,19,1180,1189,10,Eye Contact
+S3,20,1218,1223,6,Eye Contact
+S3,21,1287,1298,12,Eye Contact
+S3,22,1329,1343,15,Eye Contact
+S3,23,1380,1389,10,Eye Contact
+S3,24,1472,1490,19,Eye Contact
+S3,25,1524,1531,8,Eye Contact
+S3,26,1628,1633,6,Eye Contact
+S3,27,1735,1762,28,Eye Contact
+S3,28,1799,1810,12,Eye Contact
+S3,29,1838,1861,24,Eye Contact
+S3,30,1888,1899,12,Eye Contact
+S3,31,1924,1938,15,Eye Contact
+S3,32,1959,1969,11,Eye Contact
+S3,33,2002,2049,48,Eye Contact
+S3,34,2077,2111,35,Eye Contact
+S3,35,2148,2157,10,Eye Contact
+S3,36,2247,2258,12,Sudden Eye Change
+S3,37,2293,2301,9,Eye Contact
+S3,38,2338,2344,7,Eye Contact
+S3,39,2395,2406,12,Sudden Eye Change
+S3,40,2485,2496,12,Sudden Eye Change
+S3,41,2515,2555,41,Eye Contact
+S3,42,2589,2636,48,Eye Contact
+S3,43,2667,2674,8,Eye Contact
+S3,44,2720,2731,12,Sudden Eye Change
+S3,45,2770,2786,17,Sudden Eye Change
+S3,46,2810,2839,30,Eye Contact
+S3,47,2863,2869,7,Eye Contact
+S3,48,2897,2908,12,Not Looking
+S3,49,2927,2943,17,Eye Contact
+S3,50,2970,2987,18,Eye Contact
+S3,51,3016,3027,12,Eye Contact
+S3,52,3103,3150,48,Eye Contact
+S3,53,3191,3249,59,Eye Contact
+S3,54,3269,3316,48,Eye Contact
+S3,55,3392,3403,12,Eye Contact
+S3,56,3480,3503,24,Sudden Eye Change
+S3,57,3530,3542,13,Eye Contact
+S3,58,3569,3593,25,Eye Contact
+S3,59,3620,3645,26,Eye Contact
+S3,60,3685,3701,17,Eye Contact
+S3,61,3725,3736,12,Eye Contact
+S3,62,3765,3776,12,Sudden Eye Change
+S3,63,3801,3815,15,Eye Contact
+S3,64,3898,3911,14,Eye Contact
+S3,65,3990,4001,12,Sudden Eye Change
+S3,66,4060,4071,12,Sudden Eye Change
+S3,67,4105,4137,33,Eye Contact
+S3,68,4172,4183,12,Sudden Eye Change
+S3,69,4225,4245,21,Eye Contact
+S3,70,4271,4350,80,Not Looking
+S4,1,14,54,41,Smiling
+S4,2,83,100,18,Eye Contact
+S4,3,127,259,133,Eye Contact
+S4,4,284,360,77,Eye Contact
+S4,5,394,409,16,Eye Contact
+S4,6,546,557,12,Eye Contact
+S4,7,575,599,25,Not Looking
+S4,8,691,724,34,Smiling
+S4,9,759,779,21,Eye Contact
+S4,10,836,854,19,Eye Contact
+S4,11,912,927,16,Eye Contact
+S4,12,999,1013,15,Eye Contact
+S4,13,1118,1129,12,Eye Contact
+S4,14,1160,1192,33,Smiling
+S4,15,1469,1481,13,Eye Contact
+S4,16,1541,1564,24,Smiling
+S4,17,1593,1621,29,Eye Contact
+S4,18,1831,1860,30,Eye Contact
+S4,19,1920,1955,36,Eye Contact
+S4,20,2043,2054,12,Sudden Eye Change
+S4,21,2112,2150,39,Eye Contact
+S4,22,2179,2214,36,Eye Contact
+S4,23,2346,2380,35,Eye Contact
+S4,24,2438,2448,11,Eye Contact
+S4,25,2539,2565,27,Eye Contact
+S4,26,2610,2635,26,Eye Contact
+S4,27,2682,2714,33,Eye Contact
+S4,28,2824,2835,12,Eye Contact
+S4,29,2898,2912,15,Eye Contact
+S4,30,2964,2998,35,Eye Contact
+S4,31,3095,3119,25,Eye Contact
+S4,32,3178,3192,15,Eye Contact
+S4,33,3244,3262,19,Eye Contact
+S4,34,3319,3329,11,Not Looking
+S4,35,3536,3549,14,Eye Contact
+S4,36,3653,3690,38,Eye Contact
+S4,37,3707,3730,24,Eye Contact
+S4,38,3764,3796,33,Smiling
+S4,39,3822,3911,90,Smiling

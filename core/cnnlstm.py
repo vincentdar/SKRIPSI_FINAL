@@ -36,7 +36,7 @@ class CNNLSTM:
         # self.model.load_weights("transfer_mobilenet_cnnlstm_tfrecord/cp.ckpt").expect_partial()    
 
     def process(self, data, conf=0.5):                
-        pred = np.squeeze(self.model.predict(data))
+        pred = np.squeeze(self.model.predict(data, verbose=0))
         if pred >= conf:
             label = 1
         else:

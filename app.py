@@ -7,9 +7,10 @@ from PyQt5.QtMultimediaWidgets import QVideoWidget
 from PyQt5.QtWidgets import (QApplication, QFileDialog, QHBoxLayout, QLabel,
         QPushButton, QSizePolicy, QSlider, QStyle, QVBoxLayout, QWidget)
 from PyQt5.QtWidgets import QMainWindow,QWidget, QPushButton, QAction, QTextEdit
-from PyQt5.QtGui import QIcon, QPixmap, QColor, QImage
+from PyQt5.QtGui import QIcon, QPixmap, QColor, QImage, QTextCursor
 from core.localize import Localize
 from core.cnnlstm import CNNLSTM
+from evaluation.evaluation import MyEvaluation
 import sys
 import cv2
 import numpy as np
@@ -18,22 +19,32 @@ import time
 
 class VideoThread(QThread):
     change_pixmap_signal = pyqtSignal(np.ndarray)    
+    append_output_log = pyqtSignal(str)
 
     def __init__(self):
         QThread.__init__(self)
-        self.filename = ""  
-        self.ourPause = False
+        
         # Initialize Localization Algorithm
         self.localization_algorithm = Localize() 
 
         # Initialize Spotting Algorithm
         self.prediction_model = CNNLSTM()        
-        self.prediction_model.mobilenet("core/transfer_mobilenet_cnnlstm_tfrecord_2/cp.ckpt")
+        # self.prediction_model.mobilenet("core/transfer_mobilenet_cnnlstm_tfrecord_2/cp.ckpt")
+        self.prediction_model.mobilenet("core/transfer_mobilenet_unfreezelast20_pubspeak_cnnlstm_tfrecord_pyramid_1_loso_S1/cp.ckpt")
+        
+        # Initialize Settings
+        self.eval = MyEvaluation()
 
-        # Get the minimum 12 window
-        self.sliding_window = []
-    
+        # Control the thread
+        self.filename = ""  
+        self.ourPause = False
+        self.threadRunning = True
+        self.interruptCurrentProcess = False
+        self.startProcess = False
+        
     def set_filename(self, filename):
+        if filename == "evaluation\S1.mp4":
+            self.eval.read_label("evaluation\label_4sub.csv", "S1")
         self.filename = filename                 
 
     def setPause(self, pause):
@@ -42,19 +53,70 @@ class VideoThread(QThread):
     def getPause(self):
         return self.ourPause
 
-    def run(self):        
-        cap = cv2.VideoCapture(self.filename)
-        itr = 0
-        while (cap.isOpened()):
-            while self.ourPause:
-                time.sleep(0.2)
+    def setThreadRunning(self, threadRunning):
+        self.threadRunning = threadRunning
 
+    def getThreadRunning(self):
+        return self.threadRunning
+
+    def setInterruptCurrentProcess(self, interruptCurrentProcess):
+        self.interruptCurrentProcess = interruptCurrentProcess
+
+    def getInterruptCurrentProcess(self):
+        return self.interruptCurrentProcess
+
+    def setStartProcess(self, startProcess):
+        self.startProcess = startProcess
+
+    def getStartProcess(self):
+        return self.startProcess
+
+    def run(self):
+        while self.threadRunning: 
+            if self.startProcess:           
+                try:            
+                    self.process_video() 
+                except Exception as e:
+                    pass              
+
+    def process_video(self):  
+        # Check if filename is empty
+        if self.filename == '':
+            return
+
+        cap = cv2.VideoCapture(self.filename)
+        # Get the minimum n (12) window
+        sliding_window = []
+        itr = 0
+        msg_pause_emit = True
+        while (cap.isOpened()):
+
+            # Pausing
+            while self.ourPause:
+                if self.interruptCurrentProcess:
+                    break                
+                time.sleep(0.2)
+                if msg_pause_emit:
+                    self.append_output_log.emit("Processing Paused")
+                    msg_pause_emit = False
+            # Re arm the message to re emit
+            msg_pause_emit = True
+            
+            # Handle Interruption i.e change file to be processed
+            if self.interruptCurrentProcess:
+                self.append_output_log.emit("Processing Interrupted")
+                self.startProcess = False
+                self.interruptCurrentProcess = False
+                break
+
+            
+            # Read Frame from video
             ret, frame = cap.read()
             if ret:
                 itr += 1
                 # Send Bounding box frame
                 # bb_frame = self.localization_algorithm.mp_localize_bounding_box(frame)
-                # bb_frame = self.localization_algorithm.mp_localize_crop(frame)
+                bb_frame = self.localization_algorithm.mp_localize_crop(frame)
                 # try:
                 #     self.change_pixmap_signal.emit(bb_frame)
                 # except Exception as e:
@@ -62,7 +124,7 @@ class VideoThread(QThread):
                 
 
                 # Send normal frame
-                self.change_pixmap_signal.emit(frame)
+                self.change_pixmap_signal.emit(bb_frame)
 
 
                 # Dlib Correlation Tracker
@@ -73,17 +135,33 @@ class VideoThread(QThread):
                 #     self.change_pixmap_signal.emit(frame)
                 
                 # Process the frame using CNN-LSTM
-                frame = cv2.resize(frame, (224, 224), interpolation=cv2.INTER_AREA)
+                frame = cv2.resize(bb_frame, (224, 224), interpolation=cv2.INTER_AREA)
                 rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) / 255
 
-                self.sliding_window.append(rgb)
-                if len(self.sliding_window) > 12:                
-                    self.sliding_window.pop(0)
+                sliding_window.append(rgb)
+                # if len(sliding_window) > 12:                
+                #     sliding_window.pop(0)
 
-                if len(self.sliding_window) == 12:
-                    np_sliding_window = np.expand_dims(np.array(self.sliding_window), axis=0) 
+                if len(sliding_window) == 12:
+                    np_sliding_window = np.expand_dims(np.array(sliding_window), axis=0) 
                     conf, label = self.prediction_model.process(np_sliding_window, conf=0.7)
-                    print("Label of frame", itr - 12, "to", itr, "Label", label, "Confidence Level:", conf)                   
+                    start_frame = itr - 11
+                    end_frame = itr
+                        
+                    sliding_window = []                         
+                    print("Label of frame", start_frame, "to", end_frame, "Label", label, "Confidence Level:", conf)
+                    # Evaluation
+                    if self.eval != None:
+                        self.eval.count(start_frame, end_frame, label)
+            else:
+                self.eval.to_csv()
+                self.eval.print_total()
+                self.eval.reset_count()
+                self.startProcess = False
+                break
+
+                    
+
 
 
 class VideoWindow(QMainWindow):
@@ -91,7 +169,8 @@ class VideoWindow(QMainWindow):
         super(VideoWindow, self).__init__(parent)
         self.setWindowTitle("ISpeak Micro-expressions Detection")
         self.disply_width = 640
-        self.display_height = 480 
+        self.display_height = 480
+        self.filename = '' 
         
         # Upload Process Widget
         self.uploadButton = QPushButton()
@@ -111,7 +190,10 @@ class VideoWindow(QMainWindow):
         # create the video capture thread
         self.thread = VideoThread()
         # connect its signal to the update_image slot
-        self.thread.change_pixmap_signal.connect(self.update_image)               
+        self.thread.change_pixmap_signal.connect(self.update_image)  
+        self.thread.append_output_log.connect(self.append_output_log)
+        # start the thread        
+        self.thread.start()                 
 
         # Control Widget
         self.playButton = QPushButton()        
@@ -135,6 +217,12 @@ class VideoWindow(QMainWindow):
         openAction.setStatusTip('Open movie')
         openAction.triggered.connect(self.openFile)
 
+        # Create new action
+        evaluateAction = QAction(QIcon('open.png'), '&Evaluate', self)        
+        evaluateAction.setShortcut('Ctrl+E')
+        evaluateAction.setStatusTip('Evaluate on S1')
+        evaluateAction.triggered.connect(self.evaluate_s1)
+
         # Create exit action
         exitAction = QAction(QIcon('exit.png'), '&Exit', self)        
         exitAction.setShortcut('Ctrl+Q')
@@ -145,6 +233,7 @@ class VideoWindow(QMainWindow):
         menuBar = self.menuBar()
         fileMenu = menuBar.addMenu('&File')        
         fileMenu.addAction(openAction)
+        fileMenu.addAction(evaluateAction)
         fileMenu.addAction(exitAction)
 
         # Create a widget for window contents
@@ -196,12 +285,19 @@ class VideoWindow(QMainWindow):
         # Set widget to contain window contents
         wid.setLayout(layout)
 
-    def openFile(self):
-        self.filename, _ = QFileDialog.getOpenFileName(self, "Open Video", QDir.homePath())        
-        if self.filename != '':            
-            self.outputLogText.append("Image Upload Succesful")         
+    def openFile(self):        
+        filename, _ = QFileDialog.getOpenFileName(self, "Open Video", QDir.homePath())        
+        if self.filename == '':      
+            self.filename = filename
+            self.thread.set_filename(self.filename)
+            self.append_output_log("Image Upload Succesful") 
+        else:
+            self.filename = filename  
+            self.thread.set_filename(self.filename)
+            self.thread.setInterruptCurrentProcess(True)                        
 
     def exitCall(self):
+        self.thread.setThreadRunning(False)
         sys.exit(app.exec_())
 
     def play(self):                
@@ -215,6 +311,14 @@ class VideoWindow(QMainWindow):
     def handleError(self):
         self.playButton.setEnabled(False)
         self.errorLabel.setText("Error: " + self.mediaPlayer.errorString())
+
+    def evaluate_s1(self):
+        self.thread.set_filename("evaluation\S1.mp4")
+        self.thread.setStartProcess(True)
+
+    # All the function below are to control and receive from class VideoThread
+    def terminate_thread(self):
+        self.thread.setThreadRunning(False)
 
     def convert_cv_qt(self, cv_img):
         """Convert from an opencv image to QPixmap"""
@@ -231,17 +335,23 @@ class VideoWindow(QMainWindow):
         qt_img = self.convert_cv_qt(cv_img)        
         self.image_label.setPixmap(qt_img)
 
+    @pyqtSlot(str)
+    def append_output_log(self, msg):
+        """Append the message to output log"""
+        self.outputLogText.append(msg) 
+        self.outputLogText.verticalScrollBar().setValue(self.outputLogText.verticalScrollBar().maximum())
+
     def process(self):
-        """Convert from an opencv image to QPixmap"""            
-        self.outputLogText.append("Processing Video")
-        # start the thread
-        self.thread.set_filename(self.filename)
-        self.thread.start()  
+        """Convert from an opencv image to QPixmap"""                    
+        self.append_output_log("Processing Video")
+        self.thread.setStartProcess(True)
         self.playButton.setIcon(self.style().standardIcon(QStyle.SP_MediaPause))      
         
 
 if __name__ == '__main__':    
-    app = QApplication(sys.argv)    
+    app = QApplication(sys.argv)   
+    # setup stylesheet
+    # app.setStyleSheet(qdarkgraystyle.load_stylesheet()) 
     player = VideoWindow()
     player.resize(640, 480)
     player.show()

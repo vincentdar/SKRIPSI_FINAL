@@ -1,0 +1,43 @@
+Subject,Detection,Start,End,Duration,Justification
+S1,1,20,50,31,Eye Contact
+S1,2,74,89,16,Eye Contact
+S1,3,117,200,84,Eye Contact
+S1,4,230,243,14,Eye Contact
+S1,5,270,296,27,Eye Contact
+S1,6,361,372,12,Eye Contact
+S1,7,415,426,12,Eye Contact
+S1,8,460,479,20,Eye Contact
+S1,9,522,539,18,Eye Contact
+S1,10,622,638,17,Eye Contact
+S1,11,663,674,12,Showing Emotions
+S1,12,680,691,12,Showing Emotions
+S1,13,798,809,12,Eye Contact
+S1,14,870,881,12,Sudden Eye Change
+S1,15,1025,1049,25,Eye Contact
+S1,16,1125,1136,12,Eye Contact
+S1,17,1213,1224,12,Eye Contact
+S1,18,1351,1362,12,Eye Contact
+S1,19,1422,1433,12,Sudden Eye Change
+S1,20,1555,1580,26,Showing Emotions
+S1,21,1688,1708,21,Eye Contact
+S1,22,1872,1883,12,Eye Contact
+S1,23,1983,1994,12,Eye Contact
+S1,24,2075,2104,30,Eye Contact
+S1,25,2280,2304,25,Eye Contact
+S1,26,2512,2524,13,Eye Contact
+S1,27,2562,2581,20,Showing Emotions
+S1,28,2717,2729,13,Eye Contact
+S1,29,2832,2851,20,Eye Contact
+S1,30,2907,2938,32,Eye Contact
+S1,31,3015,3026,12,Eye Contact
+S1,32,3107,3118,12,Sudden Eye Change
+S1,33,3191,3214,24,Eye Contact
+S1,34,3329,3340,12,Eye Contact
+S1,35,3399,3410,12,Eye Contact
+S1,36,3485,3501,17,Eye Contact
+S1,37,3610,3629,20,Eye Contact
+S1,38,3802,3822,21,Eye Contact
+S1,39,3942,3955,14,Showing Emotions
+S1,40,4056,4067,12,Eye Contact
+S1,41,4210,4228,19,Eye Contact
+S1,42,4340,4393,54,Smiling
