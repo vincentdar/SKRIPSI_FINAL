@@ -6,6 +6,7 @@ import numpy as np
 import mediapipe as mp
 import math
 import os
+from localize import Localize
 from typing import List, Mapping, Optional, Tuple, Union
 
 # file_ls = ["G:/Dataset Skripsi Batch 1/data/16 Agustus/Kelompok Evelyne Indrawati, Jonatan Waluyo, Yolanda Teresya, Alison Trixie. 16 Agustus .mp4"]
@@ -35,7 +36,7 @@ file_ls = [
     # "D:/Dataset Skripsi Batch 1/data/6 September/AUDRIANA FELICIA_CHRISTY NAOMI PANGGABEAN_ADHE PUTRI ANGGRAENI Close Up.mp4",
     # "D:/Dataset Skripsi Batch 1/data/6 September/GENESIS SHERALINE PUTRI SUSANTO_ELIKA JESSLYN MAGDALENA_VIVALDI LANDE KIDINGALLO_ANGELA TIFFANY Close Up.mp4",
     # "D:/Dataset Skripsi Batch 1/data/6 September/RYAN CHRISTIAN HAN_MICHELLE MARCELIA UMBAS_JESSICA RACHEL SUNARTA_VANESSA FRANZELINE Close Up.mp4",
-    "D:/Dataset Skripsi Batch 1/data/6 September/SELENA THEANA ALFIANDY_REYNARD CHRISTIAN_JOICE NATHANIA ANDREY_YESHUA IMANUEL Close up.mp4",
+    # "D:/Dataset Skripsi Batch 1/data/6 September/SELENA THEANA ALFIANDY_REYNARD CHRISTIAN_JOICE NATHANIA ANDREY_YESHUA IMANUEL Close up.mp4",
 ]
 
 # file_ls = [
@@ -46,12 +47,33 @@ file_ls = [
 #     "D:/Dataset Skripsi Batch 1/data/23 Agustus/CHYNTIA DEWI__JENICA TENDEAN_KEVIN JONATHAN_JEFFSON JONATHAN_Close Up_.mp4",
 #     "D:/Dataset Skripsi Batch 1/data/23 Agustus/VABITHA CHRISTABELLE_MELIANA CRISTINE_NICHOLAS ALEXANDER_Close Up.mp4",
 # ]
-target_ls = ["D:/Dataset Skripsi Batch 1 Images/23 Agustus"]
+
+file_ls = [
+    # "D:/Dataset Skripsi Batch 3 25 fps/S30.mov",
+    # "D:/Dataset Skripsi Batch 3 25 fps/S31.mov",
+    # "D:/Dataset Skripsi Batch 3 25 fps/S32.mov",
+    # "D:/Dataset Skripsi Batch 3 25 fps/S33.mov",
+    # "D:/Dataset Skripsi Batch 3 25 fps/S34.mov",
+    # "D:/Dataset Skripsi Batch 3 25 fps/S35.mov",
+    # "D:/Dataset Skripsi Batch 3 25 fps/S36.mov",
+    # "D:/Dataset Skripsi Batch 3 25 fps/S37.mov",
+
+    # "D:/Dataset Skripsi Batch 3 25 fps/S38.mov",
+    # "D:/Dataset Skripsi Batch 3 25 fps/S39.mov",
+    # "D:/Dataset Skripsi Batch 3 25 fps/S40.mov",
+    # "D:/Dataset Skripsi Batch 3 25 fps/S41.mov",
+    # "D:/Dataset Skripsi Batch 3 25 fps/S42.mov",
+    # "D:/Dataset Skripsi Batch 3 25 fps/S43.mov",
+    # "D:/Dataset Skripsi Batch 3 25 fps/S44.mov",
+    # "D:/Dataset Skripsi Batch 3 25 fps/S45.mov"
+]
+target_ls = ["D:/Dataset Skripsi Batch 3 Images"]
 
 face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_alt.xml')
 
 mp_face_detection = mp.solutions.face_detection
 mp_drawing = mp.solutions.drawing_utils
+localization_algorithm = Localize() 
 
 def _normalized_to_pixel_coordinates(
     normalized_x: float, normalized_y: float, image_width: int,
@@ -158,6 +180,7 @@ def average_tracked_point(tracked_point):
     return int(xleft / length), int(ytop / length), int(xright / length), int(ybot / length)
 
 
+
 def read_video(filename):    
     frame_count = 0
     cap = cv2.VideoCapture(filename)   
@@ -198,40 +221,42 @@ def read_video(filename):
             # cv2.imshow('Localized Frame', localized_frame) 
 
             # With tracking ON
-            tracker = localizeFace_mediapipe(frame, False)
+            # tracker = localizeFace_mediapipe(frame, False)
 
-            if tracker[0] == True:
-                tracked_point.append(tracker)            
-                if len(tracked_point) > 4:
-                    tracked_point.pop(0)
-
+            # if tracker[0] == True:
+            #     tracked_point.append(tracker)            
+            #     if len(tracked_point) > 1:
+            #         tracked_point.pop(0)
             
-            avg_bounding_box = average_tracked_point(tracked_point) 
+            # avg_bounding_box = average_tracked_point(tracked_point) 
 
             # Showing Bounding Box
             # cv2.rectangle(frame, (avg_bounding_box[0], avg_bounding_box[1]), (avg_bounding_box[2], avg_bounding_box[3]), (0, 255, 0), 2)
             # cv2.imshow('Localized Frame', frame)   
+
+            
                 
-            try:                
-                faceROI = frame[avg_bounding_box[1]:avg_bounding_box[3], avg_bounding_box[0]:avg_bounding_box[2]]
+            try:            
+                detected, xleft, ytop, xright, ybot = localization_algorithm.mp_face_mesh_crop_fixed_bb_centroid_preprocessing(frame)                                
+                faceROI = frame[ytop:ybot, xleft:xright]
                 faceROI = cv2.resize(faceROI, (224, 224), interpolation=cv2.INTER_AREA)
                 # print("Face detected : Frame", frame_count)
-                cv2.imshow('Localized Frame', faceROI) 
+                cv2.imshow('Localized Frame', faceROI)                 
 
                 # write frame to folder 
-                # written_filename = "img" + str(frame_count).zfill(5) + ".jpg"
-                # final_written_filename = os.path.join(target_full_path, written_filename)            
-                # cv2.imwrite(final_written_filename, faceROI)     # save frame as JPEG file
+                written_filename = "img" + str(frame_count).zfill(5) + ".jpg"
+                final_written_filename = os.path.join(target_full_path, written_filename)            
+                cv2.imwrite(final_written_filename, faceROI)     # save frame as JPEG file
 
             except Exception as e:
                 # print("Face NOT detected : Frame", frame_count)
                 cv2.imshow('Localized Frame', blank_frame)                
                   
                 # write frame to folder 
-                # written_filename = "img" + str(frame_count).zfill(5) + ".jpg"
-                # final_written_filename = os.path.join(target_full_path, written_filename)            
-                # cv2.imwrite(final_written_filename, blank_frame)     # save frame as JPEG file  
-                # failed_file_tracker.write(written_filename + "\n")                                               
+                written_filename = "img" + str(frame_count).zfill(5) + ".jpg"
+                final_written_filename = os.path.join(target_full_path, written_filename)            
+                cv2.imwrite(final_written_filename, blank_frame)     # save frame as JPEG file  
+                failed_file_tracker.write(written_filename + "\n")                                               
             
 
             frame_count += 1

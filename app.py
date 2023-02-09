@@ -82,7 +82,7 @@ class VideoThread(QThread):
     def process_video(self):  
         # Check if filename is empty
         if self.filename == '':
-            return
+            return                
 
         cap = cv2.VideoCapture(self.filename)
         # Get the minimum n (12) window
@@ -90,7 +90,6 @@ class VideoThread(QThread):
         itr = 0
         msg_pause_emit = True
         while (cap.isOpened()):
-
             # Pausing
             while self.ourPause:
                 if self.interruptCurrentProcess:
@@ -103,7 +102,8 @@ class VideoThread(QThread):
             msg_pause_emit = True
             
             # Handle Interruption i.e change file to be processed
-            if self.interruptCurrentProcess:
+            if self.interruptCurrentProcess:          
+                self.localization_algorithm.plot_centroid_length(self.filename + ".png")                
                 self.append_output_log.emit("Processing Interrupted")
                 self.startProcess = False
                 self.interruptCurrentProcess = False
@@ -114,9 +114,12 @@ class VideoThread(QThread):
             ret, frame = cap.read()
             if ret:
                 itr += 1
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 # Send Bounding box frame
                 # bb_frame = self.localization_algorithm.mp_localize_bounding_box(frame)
-                bb_frame = self.localization_algorithm.mp_localize_crop(frame)
+                # bb_frame = self.localization_algorithm.mp_face_mesh_bounding_box(frame)
+                bb_frame = self.localization_algorithm.mp_face_mesh_crop_fixed_bb_centroid(frame)
+                # bb_frame = self.localization_algorithm.mp_localize_crop(frame)
                 # try:
                 #     self.change_pixmap_signal.emit(bb_frame)
                 # except Exception as e:
@@ -124,8 +127,7 @@ class VideoThread(QThread):
                 
 
                 # Send normal frame
-                self.change_pixmap_signal.emit(bb_frame)
-
+                self.change_pixmap_signal.emit(bb_frame)                
 
                 # Dlib Correlation Tracker
                 # bb_frame = self.localization_algorithm.dlib_correlation_tracker(frame)
@@ -135,30 +137,38 @@ class VideoThread(QThread):
                 #     self.change_pixmap_signal.emit(frame)
                 
                 # Process the frame using CNN-LSTM
-                frame = cv2.resize(bb_frame, (224, 224), interpolation=cv2.INTER_AREA)
-                rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) / 255
+            #     frame = cv2.resize(bb_frame, (224, 224), interpolation=cv2.INTER_AREA)
+            #     rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) / 255
 
-                sliding_window.append(rgb)
-                # if len(sliding_window) > 12:                
-                #     sliding_window.pop(0)
+            #     sliding_window.append(rgb)
+            #     # if len(sliding_window) > 12:                
+            #     #     sliding_window.pop(0)
 
-                if len(sliding_window) == 12:
-                    np_sliding_window = np.expand_dims(np.array(sliding_window), axis=0) 
-                    conf, label = self.prediction_model.process(np_sliding_window, conf=0.7)
-                    start_frame = itr - 11
-                    end_frame = itr
+            #     if len(sliding_window) == 12:
+            #         np_sliding_window = np.expand_dims(np.array(sliding_window), axis=0) 
+            #         conf, label = self.prediction_model.process(np_sliding_window, conf=0.7)
+            #         start_frame = itr - 11
+            #         end_frame = itr
                         
-                    sliding_window = []                         
-                    print("Label of frame", start_frame, "to", end_frame, "Label", label, "Confidence Level:", conf)
-                    # Evaluation
-                    if self.eval != None:
-                        self.eval.count(start_frame, end_frame, label)
-            else:
-                self.eval.to_csv()
-                self.eval.print_total()
-                self.eval.reset_count()
-                self.startProcess = False
+            #         sliding_window = []                         
+            #         print("Label of frame", start_frame, "to", end_frame, "Label", label, "Confidence Level:", conf)
+            #         # Evaluation
+            #         if self.eval != None:
+            #             self.eval.count(start_frame, end_frame, label)
+            else:                
+                if self.eval != None:
+                    self.eval.to_csv()
+                    self.eval.print_total()
+                    self.eval.reset_count()
+
+                self.localization_algorithm.plot_centroid_length(self.filename + ".png")  
+                self.append_output_log.emit("Video Finished")                    
+                self.startProcess = False                                
                 break
+        else:
+            self.localization_algorithm.plot_centroid_length(self.filename + ".png")  
+            self.append_output_log.emit("Video Finished (CAP Closed)")                    
+            self.startProcess = False                
 
                     
 
@@ -322,10 +332,10 @@ class VideoWindow(QMainWindow):
 
     def convert_cv_qt(self, cv_img):
         """Convert from an opencv image to QPixmap"""
-        rgb_image = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
-        h, w, ch = rgb_image.shape
+        # rgb_image = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
+        h, w, ch = cv_img.shape
         bytes_per_line = ch * w
-        convert_to_Qt_format = QImage(rgb_image.data, w, h, bytes_per_line, QImage.Format_RGB888)
+        convert_to_Qt_format = QImage(cv_img.data, w, h, bytes_per_line, QImage.Format_RGB888)
         p = convert_to_Qt_format.scaled(self.disply_width, self.display_height, Qt.KeepAspectRatio)
         return QPixmap.fromImage(p)
     

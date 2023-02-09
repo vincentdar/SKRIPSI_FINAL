@@ -657,7 +657,7 @@ class Localize:
     
                     return (True, xleft, ytop, xright, ybot)
                     # END CODE
-            return (False, 0, 0, 0, 0)
+            return (False, xleft, ytop, xright, ybot)
             
 
             
