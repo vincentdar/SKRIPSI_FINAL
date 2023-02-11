@@ -117,8 +117,10 @@ class VideoThread(QThread):
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 # Send Bounding box frame
                 # bb_frame = self.localization_algorithm.mp_localize_bounding_box(frame)
-                # bb_frame = self.localization_algorithm.mp_face_mesh_bounding_box(frame)
-                bb_frame = self.localization_algorithm.mp_face_mesh_crop_fixed_bb_centroid(frame)
+                bb_frame = self.localization_algorithm.mp_face_mesh_bounding_box(frame)
+                # bb_frame = self.localization_algorithm.mp_face_mesh_crop_fixed_bb_nose_tip(frame)
+
+                # bb_frame = self.localization_algorithm.mp_localize_crop_scale(frame) # Ide Ko Hans
                 # bb_frame = self.localization_algorithm.mp_localize_crop(frame)
                 # try:
                 #     self.change_pixmap_signal.emit(bb_frame)

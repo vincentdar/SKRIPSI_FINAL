@@ -1,0 +1,200 @@
+Epoch 1/50
+    541/Unknown - 94s 146ms/step - loss: 0.6799 - accuracy: 0.5605
+Epoch 1: val_accuracy improved from -inf to 0.63124, saving model to /content/drive/MyDrive/Skripsi/Checkpoint/Transfer_mobilenet_cnnlstm_localize_tfrecord_pyramid_1/cp.ckpt
+541/541 [==============================] - 173s 292ms/step - loss: 0.6799 - accuracy: 0.5605 - val_loss: 0.6311 - val_accuracy: 0.6312
+Epoch 2/50
+541/541 [==============================] - ETA: 0s - loss: 0.6120 - accuracy: 0.6557
+Epoch 2: val_accuracy improved from 0.63124 to 0.64880, saving model to /content/drive/MyDrive/Skripsi/Checkpoint/Transfer_mobilenet_cnnlstm_localize_tfrecord_pyramid_1/cp.ckpt
+541/541 [==============================] - 156s 287ms/step - loss: 0.6120 - accuracy: 0.6557 - val_loss: 0.6032 - val_accuracy: 0.6488
+Epoch 3/50
+541/541 [==============================] - ETA: 0s - loss: 0.5783 - accuracy: 0.6807
+Epoch 3: val_accuracy improved from 0.64880 to 0.65850, saving model to /content/drive/MyDrive/Skripsi/Checkpoint/Transfer_mobilenet_cnnlstm_localize_tfrecord_pyramid_1/cp.ckpt
+541/541 [==============================] - 153s 283ms/step - loss: 0.5783 - accuracy: 0.6807 - val_loss: 0.6291 - val_accuracy: 0.6585
+Epoch 4/50
+541/541 [==============================] - ETA: 0s - loss: 0.5634 - accuracy: 0.6936
+Epoch 4: val_accuracy improved from 0.65850 to 0.66913, saving model to /content/drive/MyDrive/Skripsi/Checkpoint/Transfer_mobilenet_cnnlstm_localize_tfrecord_pyramid_1/cp.ckpt
+541/541 [==============================] - 155s 285ms/step - loss: 0.5634 - accuracy: 0.6936 - val_loss: 0.5866 - val_accuracy: 0.6691
+Epoch 5/50
+541/541 [==============================] - ETA: 0s - loss: 0.5261 - accuracy: 0.7237
+Epoch 5: val_accuracy did not improve from 0.66913
+541/541 [==============================] - 162s 300ms/step - loss: 0.5261 - accuracy: 0.7237 - val_loss: 0.5958 - val_accuracy: 0.6682
+Epoch 6/50
+541/541 [==============================] - ETA: 0s - loss: 0.4963 - accuracy: 0.7352
+Epoch 6: val_accuracy improved from 0.66913 to 0.71211, saving model to /content/drive/MyDrive/Skripsi/Checkpoint/Transfer_mobilenet_cnnlstm_localize_tfrecord_pyramid_1/cp.ckpt
+541/541 [==============================] - 158s 290ms/step - loss: 0.4963 - accuracy: 0.7352 - val_loss: 0.5461 - val_accuracy: 0.7121
+Epoch 7/50
+541/541 [==============================] - ETA: 0s - loss: 0.4752 - accuracy: 0.7542
+Epoch 7: val_accuracy improved from 0.71211 to 0.76987, saving model to /content/drive/MyDrive/Skripsi/Checkpoint/Transfer_mobilenet_cnnlstm_localize_tfrecord_pyramid_1/cp.ckpt
+541/541 [==============================] - 159s 293ms/step - loss: 0.4752 - accuracy: 0.7542 - val_loss: 0.4941 - val_accuracy: 0.7699
+Epoch 8/50
+541/541 [==============================] - ETA: 0s - loss: 0.4682 - accuracy: 0.7708
+Epoch 8: val_accuracy did not improve from 0.76987
+541/541 [==============================] - 160s 294ms/step - loss: 0.4682 - accuracy: 0.7708 - val_loss: 0.4943 - val_accuracy: 0.7394
+Epoch 9/50
+541/541 [==============================] - ETA: 0s - loss: 0.4438 - accuracy: 0.7777
+Epoch 9: val_accuracy did not improve from 0.76987
+541/541 [==============================] - 162s 297ms/step - loss: 0.4438 - accuracy: 0.7777 - val_loss: 0.5799 - val_accuracy: 0.6932
+Epoch 10/50
+541/541 [==============================] - ETA: 0s - loss: 0.4409 - accuracy: 0.7814
+Epoch 10: val_accuracy improved from 0.76987 to 0.79113, saving model to /content/drive/MyDrive/Skripsi/Checkpoint/Transfer_mobilenet_cnnlstm_localize_tfrecord_pyramid_1/cp.ckpt
+541/541 [==============================] - 158s 290ms/step - loss: 0.4409 - accuracy: 0.7814 - val_loss: 0.4597 - val_accuracy: 0.7911
+Epoch 11/50
+541/541 [==============================] - ETA: 0s - loss: 0.4168 - accuracy: 0.8138
+Epoch 11: val_accuracy did not improve from 0.79113
+541/541 [==============================] - 157s 288ms/step - loss: 0.4168 - accuracy: 0.8138 - val_loss: 0.4891 - val_accuracy: 0.7750
+Epoch 12/50
+541/541 [==============================] - ETA: 0s - loss: 0.3865 - accuracy: 0.8304
+Epoch 12: val_accuracy improved from 0.79113 to 0.80083, saving model to /content/drive/MyDrive/Skripsi/Checkpoint/Transfer_mobilenet_cnnlstm_localize_tfrecord_pyramid_1/cp.ckpt
+541/541 [==============================] - 155s 284ms/step - loss: 0.3865 - accuracy: 0.8304 - val_loss: 0.4525 - val_accuracy: 0.8008
+Epoch 13/50
+541/541 [==============================] - ETA: 0s - loss: 0.4179 - accuracy: 0.8170
+Epoch 13: val_accuracy improved from 0.80083 to 0.81007, saving model to /content/drive/MyDrive/Skripsi/Checkpoint/Transfer_mobilenet_cnnlstm_localize_tfrecord_pyramid_1/cp.ckpt
+541/541 [==============================] - 155s 284ms/step - loss: 0.4179 - accuracy: 0.8170 - val_loss: 0.4298 - val_accuracy: 0.8101
+Epoch 14/50
+541/541 [==============================] - ETA: 0s - loss: 0.3585 - accuracy: 0.8378
+Epoch 14: val_accuracy improved from 0.81007 to 0.81701, saving model to /content/drive/MyDrive/Skripsi/Checkpoint/Transfer_mobilenet_cnnlstm_localize_tfrecord_pyramid_1/cp.ckpt
+541/541 [==============================] - 157s 287ms/step - loss: 0.3585 - accuracy: 0.8378 - val_loss: 0.3991 - val_accuracy: 0.8170
+Epoch 15/50
+541/541 [==============================] - ETA: 0s - loss: 0.3538 - accuracy: 0.8420
+Epoch 15: val_accuracy did not improve from 0.81701
+541/541 [==============================] - 157s 288ms/step - loss: 0.3538 - accuracy: 0.8420 - val_loss: 0.4437 - val_accuracy: 0.8128
+Epoch 16/50
+541/541 [==============================] - ETA: 0s - loss: 0.3501 - accuracy: 0.8581
+Epoch 16: val_accuracy did not improve from 0.81701
+541/541 [==============================] - 157s 287ms/step - loss: 0.3501 - accuracy: 0.8581 - val_loss: 0.4566 - val_accuracy: 0.8119
+Epoch 17/50
+541/541 [==============================] - ETA: 0s - loss: 0.3433 - accuracy: 0.8540
+Epoch 17: val_accuracy improved from 0.81701 to 0.81885, saving model to /content/drive/MyDrive/Skripsi/Checkpoint/Transfer_mobilenet_cnnlstm_localize_tfrecord_pyramid_1/cp.ckpt
+541/541 [==============================] - 158s 290ms/step - loss: 0.3433 - accuracy: 0.8540 - val_loss: 0.4042 - val_accuracy: 0.8189
+Epoch 18/50
+541/541 [==============================] - ETA: 0s - loss: 0.3088 - accuracy: 0.8688
+Epoch 18: val_accuracy improved from 0.81885 to 0.86322, saving model to /content/drive/MyDrive/Skripsi/Checkpoint/Transfer_mobilenet_cnnlstm_localize_tfrecord_pyramid_1/cp.ckpt
+541/541 [==============================] - 158s 289ms/step - loss: 0.3088 - accuracy: 0.8688 - val_loss: 0.3275 - val_accuracy: 0.8632
+Epoch 19/50
+541/541 [==============================] - ETA: 0s - loss: 0.3195 - accuracy: 0.8526
+Epoch 19: val_accuracy did not improve from 0.86322
+541/541 [==============================] - 158s 290ms/step - loss: 0.3195 - accuracy: 0.8526 - val_loss: 0.3293 - val_accuracy: 0.8591
+Epoch 20/50
+541/541 [==============================] - ETA: 0s - loss: 0.3067 - accuracy: 0.8692
+Epoch 20: val_accuracy did not improve from 0.86322
+541/541 [==============================] - 161s 294ms/step - loss: 0.3067 - accuracy: 0.8692 - val_loss: 0.3195 - val_accuracy: 0.8618
+Epoch 21/50
+541/541 [==============================] - ETA: 0s - loss: 0.3068 - accuracy: 0.8678
+Epoch 21: val_accuracy improved from 0.86322 to 0.86599, saving model to /content/drive/MyDrive/Skripsi/Checkpoint/Transfer_mobilenet_cnnlstm_localize_tfrecord_pyramid_1/cp.ckpt
+541/541 [==============================] - 163s 299ms/step - loss: 0.3068 - accuracy: 0.8678 - val_loss: 0.3129 - val_accuracy: 0.8660
+Epoch 22/50
+541/541 [==============================] - ETA: 0s - loss: 0.2696 - accuracy: 0.8937
+Epoch 22: val_accuracy improved from 0.86599 to 0.88863, saving model to /content/drive/MyDrive/Skripsi/Checkpoint/Transfer_mobilenet_cnnlstm_localize_tfrecord_pyramid_1/cp.ckpt
+541/541 [==============================] - 164s 301ms/step - loss: 0.2696 - accuracy: 0.8937 - val_loss: 0.2701 - val_accuracy: 0.8886
+Epoch 23/50
+541/541 [==============================] - ETA: 0s - loss: 0.2587 - accuracy: 0.8970
+Epoch 23: val_accuracy did not improve from 0.88863
+541/541 [==============================] - 162s 297ms/step - loss: 0.2587 - accuracy: 0.8970 - val_loss: 0.3929 - val_accuracy: 0.8258
+Epoch 24/50
+541/541 [==============================] - ETA: 0s - loss: 0.2684 - accuracy: 0.8914
+Epoch 24: val_accuracy did not improve from 0.88863
+541/541 [==============================] - 162s 296ms/step - loss: 0.2684 - accuracy: 0.8914 - val_loss: 0.3185 - val_accuracy: 0.8507
+Epoch 25/50
+541/541 [==============================] - ETA: 0s - loss: 0.2604 - accuracy: 0.8979
+Epoch 25: val_accuracy did not improve from 0.88863
+541/541 [==============================] - 165s 302ms/step - loss: 0.2604 - accuracy: 0.8979 - val_loss: 0.5012 - val_accuracy: 0.7754
+Epoch 26/50
+541/541 [==============================] - ETA: 0s - loss: 0.2804 - accuracy: 0.8817
+Epoch 26: val_accuracy did not improve from 0.88863
+541/541 [==============================] - 161s 295ms/step - loss: 0.2804 - accuracy: 0.8817 - val_loss: 0.3433 - val_accuracy: 0.8438
+Epoch 27/50
+541/541 [==============================] - ETA: 0s - loss: 0.2723 - accuracy: 0.8845
+Epoch 27: val_accuracy did not improve from 0.88863
+541/541 [==============================] - 160s 293ms/step - loss: 0.2723 - accuracy: 0.8845 - val_loss: 0.4707 - val_accuracy: 0.8018
+Epoch 28/50
+541/541 [==============================] - ETA: 0s - loss: 0.2549 - accuracy: 0.8937
+Epoch 28: val_accuracy did not improve from 0.88863
+541/541 [==============================] - 165s 302ms/step - loss: 0.2549 - accuracy: 0.8937 - val_loss: 0.4170 - val_accuracy: 0.8091
+Epoch 29/50
+541/541 [==============================] - ETA: 0s - loss: 0.2397 - accuracy: 0.9043
+Epoch 29: val_accuracy did not improve from 0.88863
+541/541 [==============================] - 162s 297ms/step - loss: 0.2397 - accuracy: 0.9043 - val_loss: 0.2860 - val_accuracy: 0.8771
+Epoch 30/50
+541/541 [==============================] - ETA: 0s - loss: 0.2299 - accuracy: 0.9076
+Epoch 30: val_accuracy did not improve from 0.88863
+541/541 [==============================] - 163s 298ms/step - loss: 0.2299 - accuracy: 0.9076 - val_loss: 0.3533 - val_accuracy: 0.8480
+Epoch 31/50
+541/541 [==============================] - ETA: 0s - loss: 0.2384 - accuracy: 0.9048
+Epoch 31: val_accuracy improved from 0.88863 to 0.90111, saving model to /content/drive/MyDrive/Skripsi/Checkpoint/Transfer_mobilenet_cnnlstm_localize_tfrecord_pyramid_1/cp.ckpt
+541/541 [==============================] - 164s 300ms/step - loss: 0.2384 - accuracy: 0.9048 - val_loss: 0.2256 - val_accuracy: 0.9011
+Epoch 32/50
+541/541 [==============================] - ETA: 0s - loss: 0.2463 - accuracy: 0.9039
+Epoch 32: val_accuracy did not improve from 0.90111
+541/541 [==============================] - 226s 415ms/step - loss: 0.2463 - accuracy: 0.9039 - val_loss: 0.3982 - val_accuracy: 0.8387
+Epoch 33/50
+541/541 [==============================] - ETA: 0s - loss: 0.2332 - accuracy: 0.9108
+Epoch 33: val_accuracy did not improve from 0.90111
+541/541 [==============================] - 166s 303ms/step - loss: 0.2332 - accuracy: 0.9108 - val_loss: 0.3016 - val_accuracy: 0.8743
+Epoch 34/50
+541/541 [==============================] - ETA: 0s - loss: 0.2187 - accuracy: 0.9122
+Epoch 34: val_accuracy improved from 0.90111 to 0.92052, saving model to /content/drive/MyDrive/Skripsi/Checkpoint/Transfer_mobilenet_cnnlstm_localize_tfrecord_pyramid_1/cp.ckpt
+541/541 [==============================] - 164s 302ms/step - loss: 0.2187 - accuracy: 0.9122 - val_loss: 0.2043 - val_accuracy: 0.9205
+Epoch 35/50
+541/541 [==============================] - ETA: 0s - loss: 0.2488 - accuracy: 0.8979
+Epoch 35: val_accuracy did not improve from 0.92052
+541/541 [==============================] - 166s 304ms/step - loss: 0.2488 - accuracy: 0.8979 - val_loss: 0.2421 - val_accuracy: 0.8983
+Epoch 36/50
+541/541 [==============================] - ETA: 0s - loss: 0.2139 - accuracy: 0.9196
+Epoch 36: val_accuracy did not improve from 0.92052
+541/541 [==============================] - 162s 296ms/step - loss: 0.2139 - accuracy: 0.9196 - val_loss: 0.3261 - val_accuracy: 0.8383
+Epoch 37/50
+541/541 [==============================] - ETA: 0s - loss: 0.2275 - accuracy: 0.9053
+Epoch 37: val_accuracy did not improve from 0.92052
+541/541 [==============================] - 163s 300ms/step - loss: 0.2275 - accuracy: 0.9053 - val_loss: 0.3295 - val_accuracy: 0.8452
+Epoch 38/50
+541/541 [==============================] - ETA: 0s - loss: 0.1969 - accuracy: 0.9233
+Epoch 38: val_accuracy did not improve from 0.92052
+541/541 [==============================] - 166s 303ms/step - loss: 0.1969 - accuracy: 0.9233 - val_loss: 0.2166 - val_accuracy: 0.9076
+Epoch 39/50
+541/541 [==============================] - ETA: 0s - loss: 0.2209 - accuracy: 0.9136
+Epoch 39: val_accuracy did not improve from 0.92052
+541/541 [==============================] - 166s 304ms/step - loss: 0.2209 - accuracy: 0.9136 - val_loss: 0.3134 - val_accuracy: 0.8609
+Epoch 40/50
+541/541 [==============================] - ETA: 0s - loss: 0.2027 - accuracy: 0.9191
+Epoch 40: val_accuracy improved from 0.92052 to 0.92468, saving model to /content/drive/MyDrive/Skripsi/Checkpoint/Transfer_mobilenet_cnnlstm_localize_tfrecord_pyramid_1/cp.ckpt
+541/541 [==============================] - 166s 304ms/step - loss: 0.2027 - accuracy: 0.9191 - val_loss: 0.1876 - val_accuracy: 0.9247
+Epoch 41/50
+541/541 [==============================] - ETA: 0s - loss: 0.2227 - accuracy: 0.9094
+Epoch 41: val_accuracy did not improve from 0.92468
+541/541 [==============================] - 163s 298ms/step - loss: 0.2227 - accuracy: 0.9094 - val_loss: 0.2270 - val_accuracy: 0.9011
+Epoch 42/50
+541/541 [==============================] - ETA: 0s - loss: 0.1923 - accuracy: 0.9210
+Epoch 42: val_accuracy improved from 0.92468 to 0.92652, saving model to /content/drive/MyDrive/Skripsi/Checkpoint/Transfer_mobilenet_cnnlstm_localize_tfrecord_pyramid_1/cp.ckpt
+541/541 [==============================] - 164s 300ms/step - loss: 0.1923 - accuracy: 0.9210 - val_loss: 0.1918 - val_accuracy: 0.9265
+Epoch 43/50
+541/541 [==============================] - ETA: 0s - loss: 0.1825 - accuracy: 0.9293
+Epoch 43: val_accuracy did not improve from 0.92652
+541/541 [==============================] - 161s 295ms/step - loss: 0.1825 - accuracy: 0.9293 - val_loss: 0.2548 - val_accuracy: 0.8877
+Epoch 44/50
+541/541 [==============================] - ETA: 0s - loss: 0.1827 - accuracy: 0.9348
+Epoch 44: val_accuracy improved from 0.92652 to 0.95287, saving model to /content/drive/MyDrive/Skripsi/Checkpoint/Transfer_mobilenet_cnnlstm_localize_tfrecord_pyramid_1/cp.ckpt
+541/541 [==============================] - 159s 291ms/step - loss: 0.1827 - accuracy: 0.9348 - val_loss: 0.1382 - val_accuracy: 0.9529
+Epoch 45/50
+541/541 [==============================] - ETA: 0s - loss: 0.1907 - accuracy: 0.9251
+Epoch 45: val_accuracy did not improve from 0.95287
+541/541 [==============================] - 159s 291ms/step - loss: 0.1907 - accuracy: 0.9251 - val_loss: 0.1725 - val_accuracy: 0.9339
+Epoch 46/50
+541/541 [==============================] - ETA: 0s - loss: 0.1975 - accuracy: 0.9205
+Epoch 46: val_accuracy did not improve from 0.95287
+541/541 [==============================] - 155s 284ms/step - loss: 0.1975 - accuracy: 0.9205 - val_loss: 0.2210 - val_accuracy: 0.9048
+Epoch 47/50
+541/541 [==============================] - ETA: 0s - loss: 0.1614 - accuracy: 0.9381
+Epoch 47: val_accuracy did not improve from 0.95287
+541/541 [==============================] - 157s 288ms/step - loss: 0.1614 - accuracy: 0.9381 - val_loss: 0.1479 - val_accuracy: 0.9459
+Epoch 48/50
+541/541 [==============================] - ETA: 0s - loss: 0.1616 - accuracy: 0.9390
+Epoch 48: val_accuracy did not improve from 0.95287
+541/541 [==============================] - 158s 290ms/step - loss: 0.1616 - accuracy: 0.9390 - val_loss: 0.1434 - val_accuracy: 0.9464
+Epoch 49/50
+541/541 [==============================] - ETA: 0s - loss: 0.1900 - accuracy: 0.9288
+Epoch 49: val_accuracy did not improve from 0.95287
+541/541 [==============================] - 159s 291ms/step - loss: 0.1900 - accuracy: 0.9288 - val_loss: 0.2143 - val_accuracy: 0.9071
+Epoch 50/50
+541/541 [==============================] - ETA: 0s - loss: 0.1484 - accuracy: 0.9432
+Epoch 50: val_accuracy improved from 0.95287 to 0.95379, saving model to /content/drive/MyDrive/Skripsi/Checkpoint/Transfer_mobilenet_cnnlstm_localize_tfrecord_pyramid_1/cp.ckpt
+541/541 [==============================] - 158s 290ms/step - loss: 0.1484 - accuracy: 0.9432 - val_loss: 0.1338 - val_accuracy: 0.9538

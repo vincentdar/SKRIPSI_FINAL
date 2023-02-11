@@ -49,14 +49,14 @@ file_ls = [
 # ]
 
 file_ls = [
-    # "D:/Dataset Skripsi Batch 3 25 fps/S30.mov",
-    # "D:/Dataset Skripsi Batch 3 25 fps/S31.mov",
-    # "D:/Dataset Skripsi Batch 3 25 fps/S32.mov",
-    # "D:/Dataset Skripsi Batch 3 25 fps/S33.mov",
-    # "D:/Dataset Skripsi Batch 3 25 fps/S34.mov",
-    # "D:/Dataset Skripsi Batch 3 25 fps/S35.mov",
-    # "D:/Dataset Skripsi Batch 3 25 fps/S36.mov",
-    # "D:/Dataset Skripsi Batch 3 25 fps/S37.mov",
+    "D:/Dataset Skripsi Batch 3 25 fps/S30.mov",
+    "D:/Dataset Skripsi Batch 3 25 fps/S31.mov",
+    "D:/Dataset Skripsi Batch 3 25 fps/S32.mov",
+    "D:/Dataset Skripsi Batch 3 25 fps/S33.mov",
+    "D:/Dataset Skripsi Batch 3 25 fps/S34.mov",
+    "D:/Dataset Skripsi Batch 3 25 fps/S35.mov",
+    "D:/Dataset Skripsi Batch 3 25 fps/S36.mov",
+    "D:/Dataset Skripsi Batch 3 25 fps/S37.mov",
 
     # "D:/Dataset Skripsi Batch 3 25 fps/S38.mov",
     # "D:/Dataset Skripsi Batch 3 25 fps/S39.mov",
@@ -67,7 +67,7 @@ file_ls = [
     # "D:/Dataset Skripsi Batch 3 25 fps/S44.mov",
     # "D:/Dataset Skripsi Batch 3 25 fps/S45.mov"
 ]
-target_ls = ["D:/Dataset Skripsi Batch 3 Images"]
+target_ls = ["D:/Dataset Skripsi Batch 3 Images V2"]
 
 face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_alt.xml')
 
@@ -237,7 +237,7 @@ def read_video(filename):
             
                 
             try:            
-                detected, xleft, ytop, xright, ybot = localization_algorithm.mp_face_mesh_crop_fixed_bb_centroid_preprocessing(frame)                                
+                detected, xleft, ytop, xright, ybot = localization_algorithm.mp_face_mesh_crop_preprocessing(frame)                                
                 faceROI = frame[ytop:ybot, xleft:xright]
                 faceROI = cv2.resize(faceROI, (224, 224), interpolation=cv2.INTER_AREA)
                 # print("Face detected : Frame", frame_count)
