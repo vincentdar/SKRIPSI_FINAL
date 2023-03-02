@@ -31,6 +31,10 @@ class Localize:
         self.bb_length = 0        
         self.init_length_bb = False
 
+        self.mp_drawing = mp.solutions.drawing_utils
+        self.mp_drawing_styles = mp.solutions.drawing_styles
+        self.drawing_spec = self.mp_drawing.DrawingSpec(thickness=1, circle_radius=1)
+
 
 
     def plot_centroid_length(self, filename):
@@ -293,6 +297,41 @@ class Localize:
                     # END CODE
                     return frame
                 
+    def mp_face_mesh_draw(self, frame):
+        print("A")
+        with self.mp_face_mesh.FaceMesh(max_num_faces=1,
+                                        refine_landmarks=True,
+                                        min_detection_confidence=0.5,
+                                        min_tracking_confidence=0.5) as face_mesh:
+            results = face_mesh.process(frame)
+            # To improve performance, optionally mark the image as not writeable to
+            # pass by reference.
+            frame.flags.writeable = True
+            if results.multi_face_landmarks:
+                for face_landmarks in results.multi_face_landmarks: 
+                    self.mp_drawing.draw_landmarks(
+                        image=frame,
+                        landmark_list=face_landmarks,
+                        connections=face_mesh.FACEMESH_TESSELATION,
+                        landmark_drawing_spec=None,
+                        connection_drawing_spec=self.mp_drawing_styles
+                        .get_default_face_mesh_tesselation_style())
+                    self.mp_drawing.draw_landmarks(
+                        image=frame,
+                        landmark_list=face_landmarks,
+                        connections=face_mesh.FACEMESH_CONTOURS,
+                        landmark_drawing_spec=None,
+                        connection_drawing_spec=self.mp_drawing_styles
+                        .get_default_face_mesh_contours_style())
+                    self.mp_drawing.draw_landmarks(
+                        image=frame,
+                        landmark_list=face_landmarks,
+                        connections=face_mesh.FACEMESH_IRISES,
+                        landmark_drawing_spec=None,
+                        connection_drawing_spec=self.mp_drawing_styles
+                        .get_default_face_mesh_iris_connections_style())
+            return frame
+                
     # Tracking the bounding box via median to "smooth out"
     def median_tracked_point(self, tracked_point):        
         length = len(tracked_point)        
@@ -438,6 +477,120 @@ class Localize:
                         pass
                     # END CODE
             return self.blank_frame
+        
+    def mp_face_mesh_crop_preprocessing(self, frame, padding=True):
+        with self.mp_face_mesh.FaceMesh(max_num_faces=1,
+                                        refine_landmarks=True,
+                                        min_detection_confidence=0.5,
+                                        min_tracking_confidence=0.5) as face_mesh:
+            results = face_mesh.process(frame)
+            # To improve performance, optionally mark the image as not writeable to
+            # pass by reference.
+            frame.flags.writeable = False
+            if results.multi_face_landmarks:
+                for face_landmarks in results.multi_face_landmarks:                    
+                    # CODE FROM https://github.com/google/mediapipe/issues/1737
+                    # mp_drawing.draw_landmarks(image, face_landmarks, mp_face_mesh.FACEMESH_CONTOURS)
+                    h, w, c = frame.shape
+                    cx_min=  w
+                    cy_min = h
+                    cx_max = cy_max= 0
+                    for id, lm in enumerate(face_landmarks.landmark):
+                        cx, cy = int(lm.x * w), int(lm.y * h)
+                        if cx<cx_min:
+                            cx_min=cx
+                        if cy<cy_min:
+                            cy_min=cy
+                        if cx>cx_max:
+                            cx_max=cx
+                        if cy>cy_max:
+                            cy_max=cy
+
+                    if padding:
+                        padding_x = int((cx_max - cx_min) * 0.05)
+                        padding_y = int((cy_max - cy_min) * 0.05)  
+                    else:
+                        padding_x = 0
+                        padding_y = 0 
+                     
+
+                    xleft = cx_min - padding_x
+                    ytop = cy_min - padding_y
+                    xright = cx_max + padding_x
+                    ybot = cy_max + padding_y
+
+                    # cv2.rectangle(frame, 
+                    #             (xleft, ytop), 
+                    #             (xright, ybot),
+                    #             (255, 0, 0), 2)
+                    
+                    # Tracking Algorithm: MEDIAN
+                    # Tuple (detected, xleft, ytop, xright, ybot)
+                    # tracker = ( True,
+                    #             cx_min - padding_x,
+                    #             cy_min - padding_y,
+                    #             cx_max + padding_x,
+                    #             cy_max + padding_y )
+                    
+                    # if tracker[0] == True:
+                    #     self.tracked_point.append(tracker)            
+                    #     if len(self.tracked_point) > 11:
+                    #         self.tracked_point.pop(0)    
+                    
+                    
+                    # (xleft, ytop, xright, ybot) = self.median_tracked_point(self.tracked_point) 
+                    # END MEDIAN                    
+
+                    # 1:1 Aspect ratio Bounding Box Without Centroid
+                    # x_delta = xright - xleft
+                    # y_delta = ybot - ytop
+
+                    # # Use y_delta as the longest
+                    # diff = round((y_delta - x_delta) / 2)
+
+                    # xleft = xleft - diff
+                    # xright = xright + diff
+
+
+                    # cv2.rectangle(frame, 
+                    #             (xleft, ytop), 
+                    #             (xright, ybot),
+                    #             (255, 255, 0), 2)
+                    # return frame
+                    
+                    # END 1:1 Aspect ratio Bounding Box Without Centroid 
+                            
+
+                    # 1:1 Aspect Ratio Bounding Box
+
+                    # Find the distance and take the longest
+                    x_delta = xright - xleft
+                    y_delta = ybot - ytop
+
+                    bb_length = max(x_delta, y_delta)
+
+                    # Centroid generation
+                    x_center = int(round((xright + xleft) / 2))
+                    y_center = int(round((ytop + ybot) / 2))
+
+                    # Centroid Tracker
+                    self.centroid_tracker.append((x_center, y_center))
+
+                    xleft = x_center - int(round(0.5 * bb_length))
+                    ytop = y_center - int(round(0.5 * bb_length))
+                    xright = x_center + int(round(0.5 * bb_length))
+                    ybot = y_center + int(round(0.5 * bb_length))
+                    
+                    # cv2.rectangle(frame, 
+                    #             (xleft, ytop), 
+                    #             (xright, ybot),
+                    #             (0, 0, 255), 2)
+                    # return frame
+                
+                    # END 1:1 Aspect Ratio Bounding Box                    
+                    return (True, xleft, ytop, xright, ybot)
+                    # END CODE
+            return (False, xleft, ytop, xright, ybot)
                 
     def mp_face_mesh_crop_fixed_bb_nose_tip(self, frame):
         with self.mp_face_mesh.FaceMesh(max_num_faces=1,
@@ -657,7 +810,27 @@ class Localize:
     
                     return (True, xleft, ytop, xright, ybot)
                     # END CODE
-            return (False, 0, 0, 0, 0)
+            return (False, xleft, ytop, xright, ybot)
+        
+
+# if __name__ == "__main__":
+#     localize = Localize()
+
+#     img = cv2.imread("D:\CASME\CASMEII\CASME2-RAW-NoVideo\CASME2-RAW\sub01\EP02_01f\img1.jpg")
+
+#     detected, xleft, ytop, xright, ybot = localize.mp_face_mesh_crop_preprocessing(img)
+
+    
+#     cropped = img[ytop:ybot, xleft:xright]
+
+#     cv2.imshow("Padding 10", cropped)
+
+#     detected, xleft, ytop, xright, ybot = localize.mp_face_mesh_crop_preprocessing(img, padding=False)
+
+#     cropped = img[ytop:ybot, xleft:xright]
+#     cv2.imshow("No Padding", cropped)
+#     cv2.waitKey(0)
+
             
 
             

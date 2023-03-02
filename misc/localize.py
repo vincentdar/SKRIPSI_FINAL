@@ -439,7 +439,7 @@ class Localize:
                     # END CODE
             return self.blank_frame
         
-    def mp_face_mesh_crop_preprocessing(self, frame):
+    def mp_face_mesh_crop_preprocessing(self, frame, padding=True):
         with self.mp_face_mesh.FaceMesh(max_num_faces=1,
                                         refine_landmarks=True,
                                         min_detection_confidence=0.5,
@@ -467,8 +467,13 @@ class Localize:
                         if cy>cy_max:
                             cy_max=cy
 
-                    padding_x = int((cx_max - cx_min) * 0.05)
-                    padding_y = int((cy_max - cy_min) * 0.05)   
+                    if padding:
+                        padding_x = int((cx_max - cx_min) * 0.05)
+                        padding_y = int((cy_max - cy_min) * 0.05)  
+                    else:
+                        padding_x = 0
+                        padding_y = 0 
+                     
 
                     xleft = cx_min - padding_x
                     ytop = cy_min - padding_y
@@ -767,6 +772,26 @@ class Localize:
                     return (True, xleft, ytop, xright, ybot)
                     # END CODE
             return (False, xleft, ytop, xright, ybot)
+        
+
+# if __name__ == "__main__":
+#     localize = Localize()
+
+#     img = cv2.imread("D:\CASME\CASMEII\CASME2-RAW-NoVideo\CASME2-RAW\sub01\EP02_01f\img1.jpg")
+
+#     detected, xleft, ytop, xright, ybot = localize.mp_face_mesh_crop_preprocessing(img)
+
+    
+#     cropped = img[ytop:ybot, xleft:xright]
+
+#     cv2.imshow("Padding 10", cropped)
+
+#     detected, xleft, ytop, xright, ybot = localize.mp_face_mesh_crop_preprocessing(img, padding=False)
+
+#     cropped = img[ytop:ybot, xleft:xright]
+#     cv2.imshow("No Padding", cropped)
+#     cv2.waitKey(0)
+
             
 
             

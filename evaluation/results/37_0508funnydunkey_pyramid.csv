@@ -1,0 +1,55 @@
+1, 12, FP, Outside, 418, 430
+13, 24, FP, Outside, 418, 430
+25, 36, FP, Outside, 418, 430
+37, 48, FP, Outside, 418, 430
+49, 60, FP, Outside, 418, 430
+61, 72, FP, Outside, 418, 430
+73, 84, FP, Outside, 418, 430
+85, 96, FP, Outside, 418, 430
+97, 108, FP, Outside, 418, 430
+109, 120, FP, Outside, 418, 430
+121, 132, FP, Outside, 418, 430
+133, 144, FP, Outside, 418, 430
+145, 156, FP, Outside, 418, 430
+157, 168, FP, Outside, 418, 430
+169, 180, FP, Outside, 418, 430
+181, 192, TN, Outside, 418, 430
+193, 204, TN, Outside, 418, 430
+205, 216, TN, Outside, 418, 430
+217, 228, TN, Outside, 418, 430
+229, 240, FP, Left Side, 233, 255
+241, 252, TP, Inside, 233, 255
+253, 264, FP, Right Side, 233, 255
+265, 276, TN, Outside, 418, 430
+277, 288, FP, Outside, 418, 430
+289, 300, FP, Outside, 418, 430
+301, 312, TN, Outside, 418, 430
+313, 324, TN, Left Side, 322, 333
+325, 336, TP, Right Side, 322, 333
+337, 348, FP, Outside, 418, 430
+349, 360, FP, Outside, 418, 430
+361, 372, TN, Outside, 418, 430
+373, 384, TN, Outside, 418, 430
+385, 396, FP, Outside, 418, 430
+397, 408, FP, Outside, 418, 430
+409, 420, FP, Left Side, 418, 430
+421, 432, FN, Right Side, 418, 430
+433, 444, TN, Outside, 418, 430
+445, 456, TN, Outside, 418, 430
+457, 468, FP, Outside, 418, 430
+469, 480, TN, Outside, 418, 430
+481, 492, TN, Outside, 418, 430
+493, 504, TN, Outside, 418, 430
+505, 516, TN, Outside, 418, 430
+517, 528, TN, Outside, 418, 430
+529, 540, TN, Outside, 418, 430
+541, 552, TN, Outside, 418, 430
+553, 564, TN, Outside, 418, 430
+565, 576, TN, Outside, 418, 430
+577, 588, TN, Outside, 418, 430
+589, 600, TN, Outside, 418, 430
+601, 612, TN, Outside, 418, 430
+613, 624, TN, Outside, 418, 430
+625, 636, TN, Outside, 418, 430
+637, 648, TN, Outside, 418, 430
+649, 660, TN, Outside, 418, 430

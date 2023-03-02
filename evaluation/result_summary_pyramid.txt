@@ -1,0 +1,119 @@
+Filename: 36_0401girlcrashing
+Detection: [(106, 145)]
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+Can't receive frame (stream end?). Exiting ...
+TP: 3
+FP: 180
+FN: 0
+TN: 127
+F1 SCORE: 0.03225806451612903
+==============================
+Filename: 36_0505funnyinnovations
+Detection: [(348, 373), (566, 582), (1074, 1095)]
+Can't receive frame (stream end?). Exiting ...
+TP: 4
+FP: 170
+FN: 0
+TN: 18
+F1 SCORE: 0.0449438202247191
+==============================
+Filename: 37_0101disgustingteeth
+Detection: [(1289, 1310)]
+Can't receive frame (stream end?). Exiting ...
+TP: 0
+FP: 9
+FN: 1
+TN: 160
+F1 SCORE: 0.0
+==============================
+Filename: 37_0402beatingpregnantwoman
+Detection: [(2783, 2810), (3045, 3066), (3176, 3200), (3397, 3413), (3502, 3514)]
+Can't receive frame (stream end?). Exiting ...
+TP: 0
+FP: 78
+FN: 6
+TN: 279
+F1 SCORE: 0.0
+==============================
+Filename: 37_0502funnyerrors
+Detection: [(851, 875), (1858, 1868)]
+Can't receive frame (stream end?). Exiting ...
+TP: 1
+FP: 25
+FN: 1
+TN: 161
+F1 SCORE: 0.07142857142857142
+==============================
+Filename: 37_0505funnyinnovations
+Detection: [(414, 423), (1167, 1182), (1468, 1509), (1511, 1541), (1941, 1974), (2229, 2269)]
+Can't receive frame (stream end?). Exiting ...
+TP: 9
+FP: 141
+FN: 3
+TN: 40
+F1 SCORE: 0.1111111111111111
+==============================
+Filename: 37_0507climbingthewall
+Detection: [(846, 861), (1571, 1680), (1751, 1762), (2020, 2074), (2341, 2400), (2688, 2752)]
+Can't receive frame (stream end?). Exiting ...
+TP: 24
+FP: 153
+FN: 2
+TN: 93
+F1 SCORE: 0.23645320197044334
+==============================
+Filename: 37_0508funnydunkey
+Detection: [(233, 255), (322, 333), (418, 430)]
+Can't receive frame (stream end?). Exiting ...
+TP: 2
+FP: 25
+FN: 1
+TN: 27
+F1 SCORE: 0.13333333333333333
+==============================
+Filename: 38_0502funnyerrors
+Detection: [(329, 342), (878, 922), (962, 981), (1189, 1197), (1782, 1841), (1869, 1882)]
+Can't receive frame (stream end?). Exiting ...
+TP: 11
+FP: 146
+FN: 1
+TN: 31
+F1 SCORE: 0.1301775147928994
+==============================
+Filename: 38_0507climbingthewall
+Detection: [(1242, 1263), (1377, 1422), (1664, 1703), (1775, 1809), (1870, 1911), (2232, 2247)]
+Can't receive frame (stream end?). Exiting ...
+TP: 5
+FP: 6
+FN: 9
+TN: 252
+F1 SCORE: 0.4
+==============================
+Filename: 40_0401girlcrashing
+Detection: [(392, 415), (592, 613)]
+Can't receive frame (stream end?). Exiting ...
+TP: 1
+FP: 8
+FN: 2
+TN: 298
+F1 SCORE: 0.16666666666666666
+==============================
+Filename: 40_0502funnyerrors
+Detection: [(601, 613), (1598, 1613)]
+Can't receive frame (stream end?). Exiting ...
+TP: 1
+FP: 59
+FN: 1
+TN: 128
+F1 SCORE: 0.03225806451612903
+==============================
+Filename: 40_0503unnyfarting
+Detection: [(2692, 2707)]
+Can't receive frame (stream end?). Exiting ...
+TP: 0
+FP: 87
+FN: 1
+TN: 146
+F1 SCORE: 0.0
+==============================
+Evaluation Done

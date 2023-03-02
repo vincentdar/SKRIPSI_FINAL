@@ -10,11 +10,13 @@ from PyQt5.QtWidgets import QMainWindow,QWidget, QPushButton, QAction, QTextEdit
 from PyQt5.QtGui import QIcon, QPixmap, QColor, QImage, QTextCursor
 from core.localize import Localize
 from core.cnnlstm import CNNLSTM
+from core.headPoseEstimation import HeadPoseEstimation
 from evaluation.evaluation import MyEvaluation
 import sys
 import cv2
 import numpy as np
 import time
+import os
 
 
 class VideoThread(QThread):
@@ -27,11 +29,12 @@ class VideoThread(QThread):
         # Initialize Localization Algorithm
         self.localization_algorithm = Localize() 
 
-        # Initialize Spotting Algorithm
-        self.prediction_model = CNNLSTM()        
-        # self.prediction_model.mobilenet("core/transfer_mobilenet_cnnlstm_tfrecord_2/cp.ckpt")
-        self.prediction_model.mobilenet("core/transfer_mobilenet_unfreezelast20_pubspeak_cnnlstm_tfrecord_pyramid_1_loso_S1/cp.ckpt")
+        # # Initialize Spotting Algorithm
+        # self.prediction_model = CNNLSTM()        
+        # # self.prediction_model.mobilenet("core/transfer_mobilenet_cnnlstm_tfrecord_2/cp.ckpt")
+        # self.prediction_model.mobilenet("core/transfer_mobilenet_unfreezelast20_pubspeak_cnnlstm_tfrecord_pyramid_1_loso_S4/cp.ckpt")
         
+        self.headPoseEstimation = HeadPoseEstimation()
         # Initialize Settings
         self.eval = MyEvaluation()
 
@@ -41,6 +44,8 @@ class VideoThread(QThread):
         self.threadRunning = True
         self.interruptCurrentProcess = False
         self.startProcess = False
+
+        self.destination_folder = "results"
         
     def set_filename(self, filename):
         if filename == "evaluation\S1.mp4":
@@ -70,6 +75,12 @@ class VideoThread(QThread):
 
     def getStartProcess(self):
         return self.startProcess
+    
+    def createDirectory(self, path):
+        try:
+            os.mkdir(path)
+        except Exception as e:                            
+            pass    
 
     def run(self):
         while self.threadRunning: 
@@ -85,11 +96,28 @@ class VideoThread(QThread):
             return                
 
         cap = cv2.VideoCapture(self.filename)
+
+
         # Get the minimum n (12) window
         sliding_window = []
         itr = 0
         msg_pause_emit = True
-        while (cap.isOpened()):
+
+        # Writing detection variables
+        pastWriting = False
+        currentWriting = False
+        detection = 1
+        video = self.filename.split('/')[-1]
+        video = video[:-4]
+        
+        self.createDirectory(os.path.join(self.destination_folder, video))
+        self.createDirectory(os.path.join(self.destination_folder, video, str(detection)))
+
+        if (cap.isOpened()== False): 
+            print("Error opening video stream or file")
+            return
+        
+        while True:
             # Pausing
             while self.ourPause:
                 if self.interruptCurrentProcess:
@@ -103,7 +131,7 @@ class VideoThread(QThread):
             
             # Handle Interruption i.e change file to be processed
             if self.interruptCurrentProcess:          
-                self.localization_algorithm.plot_centroid_length(self.filename + ".png")                
+                # self.localization_algorithm.plot_centroid_length(self.filename + ".png")                
                 self.append_output_log.emit("Processing Interrupted")
                 self.startProcess = False
                 self.interruptCurrentProcess = False
@@ -113,23 +141,43 @@ class VideoThread(QThread):
             # Read Frame from video
             ret, frame = cap.read()
             if ret:
-                itr += 1
+                itr += 1                
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                success, hpe_frame = self.headPoseEstimation.process(frame.copy())
                 # Send Bounding box frame
                 # bb_frame = self.localization_algorithm.mp_localize_bounding_box(frame)
-                bb_frame = self.localization_algorithm.mp_face_mesh_bounding_box(frame)
+                bb_frame = self.localization_algorithm.mp_face_mesh_crop_fixed_bb_centroid(frame.copy())
+                # bb_frame = self.localization_algorithm.mp_face_mesh_draw(frame)
                 # bb_frame = self.localization_algorithm.mp_face_mesh_crop_fixed_bb_nose_tip(frame)
 
                 # bb_frame = self.localization_algorithm.mp_localize_crop_scale(frame) # Ide Ko Hans
-                # bb_frame = self.localization_algorithm.mp_localize_crop(frame)
-                # try:
-                #     self.change_pixmap_signal.emit(bb_frame)
-                # except Exception as e:
-                #     self.change_pixmap_signal.emit(frame)
+                # bb_frame = self.localization_algorithm.mp_localize_crop(frame)                
+                try:
+                    if success:   
+                        # print("ACCEPT FRAME", itr)  
+                        currentWriting = True                                           
+                        write_filename = "img" + str(itr).zfill(5) + ".jpg"
+                        write_path = os.path.join(self.destination_folder, video, str(detection), write_filename)                        
+                        cv2.imwrite(write_path, cv2.cvtColor(bb_frame, cv2.COLOR_RGB2BGR))
+                        pastWriting = True
+                    else:
+                        # print("REJECT FRAME", itr)
+                        currentWriting = False
+                        if currentWriting != pastWriting:                                                                     
+                            detection += 1
+                            self.createDirectory(os.path.join(self.destination_folder, video, str(detection)))          
+                        pastWriting = False
+                    self.change_pixmap_signal.emit(hpe_frame)
+                    
+                except Exception as e:
+                    print("Emit Failed")
+                    self.change_pixmap_signal.emit(frame)
+
+                # cv2.waitKey(10)
                 
 
                 # Send normal frame
-                self.change_pixmap_signal.emit(bb_frame)                
+                # self.change_pixmap_signal.emit(bb_frame)                
 
                 # Dlib Correlation Tracker
                 # bb_frame = self.localization_algorithm.dlib_correlation_tracker(frame)
@@ -138,40 +186,36 @@ class VideoThread(QThread):
                 # except Exception as e:
                 #     self.change_pixmap_signal.emit(frame)
                 
-                # Process the frame using CNN-LSTM
-            #     frame = cv2.resize(bb_frame, (224, 224), interpolation=cv2.INTER_AREA)
-            #     rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) / 255
+                # # Process the frame using CNN-LSTM
+                # frame = cv2.resize(bb_frame, (224, 224), interpolation=cv2.INTER_AREA)
+                # rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) / 255
 
-            #     sliding_window.append(rgb)
-            #     # if len(sliding_window) > 12:                
-            #     #     sliding_window.pop(0)
+                # sliding_window.append(rgb)
+                # # if len(sliding_window) > 12:                
+                # #     sliding_window.pop(0)
 
-            #     if len(sliding_window) == 12:
-            #         np_sliding_window = np.expand_dims(np.array(sliding_window), axis=0) 
-            #         conf, label = self.prediction_model.process(np_sliding_window, conf=0.7)
-            #         start_frame = itr - 11
-            #         end_frame = itr
+                # if len(sliding_window) == 12:
+                #     np_sliding_window = np.expand_dims(np.array(sliding_window), axis=0) 
+                #     conf, label = self.prediction_model.process(np_sliding_window, conf=0.7)
+                #     start_frame = itr - 11
+                #     end_frame = itr
                         
-            #         sliding_window = []                         
-            #         print("Label of frame", start_frame, "to", end_frame, "Label", label, "Confidence Level:", conf)
-            #         # Evaluation
-            #         if self.eval != None:
-            #             self.eval.count(start_frame, end_frame, label)
-            else:                
-                if self.eval != None:
+                #     sliding_window = []                         
+                #     print("Label of frame", start_frame, "to", end_frame, "Label", label, "Confidence Level:", conf)
+                #     # Evaluation
+                #     if self.eval != None:
+                #         self.eval.count(start_frame, end_frame, label)
+                itr += 1
+            else:                              
+                if self.eval != None:                    
                     self.eval.to_csv()
                     self.eval.print_total()
                     self.eval.reset_count()
-
-                self.localization_algorithm.plot_centroid_length(self.filename + ".png")  
                 self.append_output_log.emit("Video Finished")                    
-                self.startProcess = False                                
+                self.startProcess = False 
+                self.filename = ""  
+                # self.localization_algorithm.plot_centroid_length(self.filename + ".png")                                                  
                 break
-        else:
-            self.localization_algorithm.plot_centroid_length(self.filename + ".png")  
-            self.append_output_log.emit("Video Finished (CAP Closed)")                    
-            self.startProcess = False                
-
                     
 
 

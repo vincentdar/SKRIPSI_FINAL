@@ -72,12 +72,75 @@ class MyEvaluation:
             else:
                 self.fp += 1
                 self.history.append([start_frame, end_frame, "FP", "Outside", label_start, label_end]) 
+
+    def count_casme2(self, start_frame, end_frame, prediction, label): 
+        # This function is quite different in label
+        flag_raised = False       
+        for start, end in label:
+            label_start = start
+            label_end = end                       
+            # Inside
+            if start_frame >= label_start and end_frame <= label_end:                
+                flag_raised = True
+                iou = end_frame - start_frame
+                if prediction == 1:
+                    self.tp += 1
+                    self.history.append([start_frame, end_frame, "TP", "Inside", label_start, label_end])                    
+                else:
+                    self.fn += 1         
+                    self.history.append([start_frame, end_frame, "FN", "Inside", label_start, label_end])              
+            # Left Side
+            elif start_frame < label_start and end_frame > label_start:                
+                flag_raised = True
+                iou = end_frame - label_start                
+                if prediction == 1 and iou > 7:
+                    self.tp += 1
+                    self.history.append([start_frame, end_frame, "TP", "Left Side", label_start, label_end])
+                elif prediction == 1 and iou <= 7:
+                    self.fp += 1
+                    self.history.append([start_frame, end_frame, "FP", "Left Side", label_start, label_end])
+                elif prediction == 0 and iou > 7:
+                    self.fn += 1
+                    self.history.append([start_frame, end_frame, "FN", "Left Side", label_start, label_end]) 
+                elif prediction == 0 and iou < 7:
+                    self.tn += 1
+                    self.history.append([start_frame, end_frame, "TN", "Left Side", label_start, label_end])           
+            # Right Side
+            elif start_frame < label_end and end_frame > label_end:                
+                flag_raised = True
+                iou = label_end - start_frame                
+                if prediction == 1 and iou > 7:
+                    self.tp += 1
+                    self.history.append([start_frame, end_frame, "TP", "Right Side", label_start, label_end]) 
+                elif prediction == 1 and iou <= 7:
+                    self.fp += 1
+                    self.history.append([start_frame, end_frame, "FP", "Right Side", label_start, label_end]) 
+                elif prediction == 0 and iou > 7:
+                    self.fn += 1
+                    self.history.append([start_frame, end_frame, "FN", "Right Side", label_start, label_end]) 
+                elif prediction == 0 and iou < 7:
+                    self.tn += 1
+                    self.history.append([start_frame, end_frame, "TN", "Right Side", label_start, label_end]) 
+        # Outside    
+        if not flag_raised:            
+            if prediction == 0:      
+                self.tn += 1
+                self.history.append([start_frame, end_frame, "TN", "Outside", label_start, label_end]) 
+            else:
+                self.fp += 1
+                self.history.append([start_frame, end_frame, "FP", "Outside", label_start, label_end])
               
+    
     def print_total(self):
         print("TP:", self.tp)
         print("FP:", self.fp)
         print("FN:", self.fn)
         print("TN:", self.tn)
+        try:
+            f1 = self.tp / (self.tp + 0.5 * (self.fp + self.fn))
+        except:
+            f1 = 0
+        print("F1 SCORE:", f1)
 
     def reset_count(self):
         self.tp = 0
@@ -86,8 +149,8 @@ class MyEvaluation:
         self.tn = 0
         self.history = []
 
-    def to_csv(self):
-        np.savetxt("evaluation.csv", 
+    def to_csv(self, filename):
+        np.savetxt("results/" + filename + "_pyramid.csv", 
            self.history,
            delimiter =", ", 
            fmt ='% s')

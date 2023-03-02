@@ -2,7 +2,7 @@ from localize import Localize
 import os
 import cv2
 
-raw_path = r"D:\CASME\CASME(2)\rawpic\rawpic"
+raw_path = r"D:\CASME\CASMEII\CASME2-RAW-Localize\CASME2-RAW"
 localization_algorithm = Localize()
 
 
@@ -28,7 +28,7 @@ for subject in os.listdir(raw_path):
 
 
 
-# f = open('bounding_box.csv', 'w')
+# f = open('casmeii_bounding_box.csv', 'w')
 # for line in data:
 #     print(line)
 #     f.write(line)
