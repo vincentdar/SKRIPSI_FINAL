@@ -30,13 +30,13 @@ class VideoThread(QThread):
         self.localization_algorithm = Localize() 
 
         # # Initialize Spotting Algorithm
-        # self.prediction_model = CNNLSTM()        
+        self.prediction_model = CNNLSTM()        
         # # self.prediction_model.mobilenet("core/transfer_mobilenet_cnnlstm_tfrecord_2/cp.ckpt")
         # self.prediction_model.mobilenet("core/transfer_mobilenet_unfreezelast20_pubspeak_cnnlstm_tfrecord_pyramid_1_loso_S4/cp.ckpt")
         
         self.headPoseEstimation = HeadPoseEstimation()
         # Initialize Settings
-        self.eval = MyEvaluation()
+        # self.eval = MyEvaluation()
 
         # Control the thread
         self.filename = ""  
@@ -48,8 +48,8 @@ class VideoThread(QThread):
         self.destination_folder = "results"
         
     def set_filename(self, filename):
-        if filename == "evaluation\S1.mp4":
-            self.eval.read_label("evaluation\label_4sub.csv", "S1")
+        # if filename == "evaluation\S1.mp4":
+        #     self.eval.read_label("evaluation\label_4sub.csv", "S1")
         self.filename = filename                 
 
     def setPause(self, pause):
@@ -97,7 +97,6 @@ class VideoThread(QThread):
 
         cap = cv2.VideoCapture(self.filename)
 
-
         # Get the minimum n (12) window
         sliding_window = []
         itr = 0
@@ -110,6 +109,7 @@ class VideoThread(QThread):
         video = self.filename.split('/')[-1]
         video = video[:-4]
         
+        # Create Target Directory
         self.createDirectory(os.path.join(self.destination_folder, video))
         self.createDirectory(os.path.join(self.destination_folder, video, str(detection)))
 
@@ -146,27 +146,27 @@ class VideoThread(QThread):
                 success, hpe_frame = self.headPoseEstimation.process(frame.copy())
                 # Send Bounding box frame
                 # bb_frame = self.localization_algorithm.mp_localize_bounding_box(frame)
-                bb_frame = self.localization_algorithm.mp_face_mesh_crop_fixed_bb_centroid(frame.copy())
-                # bb_frame = self.localization_algorithm.mp_face_mesh_draw(frame)
+                # bb_frame = self.localization_algorithm.mp_face_mesh_crop_fixed_bb_centroid(frame.copy())
+                # bb_frame = self.localization_algorithm.mp_face_mesh_crop(frame)
                 # bb_frame = self.localization_algorithm.mp_face_mesh_crop_fixed_bb_nose_tip(frame)
 
                 # bb_frame = self.localization_algorithm.mp_localize_crop_scale(frame) # Ide Ko Hans
                 # bb_frame = self.localization_algorithm.mp_localize_crop(frame)                
                 try:
-                    if success:   
-                        # print("ACCEPT FRAME", itr)  
-                        currentWriting = True                                           
-                        write_filename = "img" + str(itr).zfill(5) + ".jpg"
-                        write_path = os.path.join(self.destination_folder, video, str(detection), write_filename)                        
-                        cv2.imwrite(write_path, cv2.cvtColor(bb_frame, cv2.COLOR_RGB2BGR))
-                        pastWriting = True
-                    else:
-                        # print("REJECT FRAME", itr)
-                        currentWriting = False
-                        if currentWriting != pastWriting:                                                                     
-                            detection += 1
-                            self.createDirectory(os.path.join(self.destination_folder, video, str(detection)))          
-                        pastWriting = False
+                    # if success:   
+                    #     # print("ACCEPT FRAME", itr)  
+                    #     currentWriting = True                                           
+                    #     write_filename = "img" + str(itr).zfill(5) + ".jpg"
+                    #     write_path = os.path.join(self.destination_folder, video, str(detection), write_filename)                        
+                    #     cv2.imwrite(write_path, cv2.cvtColor(bb_frame, cv2.COLOR_RGB2BGR))
+                    #     pastWriting = True
+                    # else:
+                    #     # print("REJECT FRAME", itr)
+                    #     currentWriting = False
+                    #     if currentWriting != pastWriting:                                                                     
+                    #         detection += 1
+                    #         self.createDirectory(os.path.join(self.destination_folder, video, str(detection)))          
+                    #     pastWriting = False
                     self.change_pixmap_signal.emit(hpe_frame)
                     
                 except Exception as e:
@@ -207,10 +207,10 @@ class VideoThread(QThread):
                 #         self.eval.count(start_frame, end_frame, label)
                 itr += 1
             else:                              
-                if self.eval != None:                    
-                    self.eval.to_csv()
-                    self.eval.print_total()
-                    self.eval.reset_count()
+                # if self.eval != None:                    
+                #     self.eval.to_csv()
+                #     self.eval.print_total()
+                #     self.eval.reset_count()
                 self.append_output_log.emit("Video Finished")                    
                 self.startProcess = False 
                 self.filename = ""  
@@ -273,12 +273,6 @@ class VideoWindow(QMainWindow):
         openAction.setStatusTip('Open movie')
         openAction.triggered.connect(self.openFile)
 
-        # Create new action
-        evaluateAction = QAction(QIcon('open.png'), '&Evaluate', self)        
-        evaluateAction.setShortcut('Ctrl+E')
-        evaluateAction.setStatusTip('Evaluate on S1')
-        evaluateAction.triggered.connect(self.evaluate_s1)
-
         # Create exit action
         exitAction = QAction(QIcon('exit.png'), '&Exit', self)        
         exitAction.setShortcut('Ctrl+Q')
@@ -288,8 +282,7 @@ class VideoWindow(QMainWindow):
         # Create menu bar and add action
         menuBar = self.menuBar()
         fileMenu = menuBar.addMenu('&File')        
-        fileMenu.addAction(openAction)
-        fileMenu.addAction(evaluateAction)
+        fileMenu.addAction(openAction)        
         fileMenu.addAction(exitAction)
 
         # Create a widget for window contents
@@ -367,10 +360,6 @@ class VideoWindow(QMainWindow):
     def handleError(self):
         self.playButton.setEnabled(False)
         self.errorLabel.setText("Error: " + self.mediaPlayer.errorString())
-
-    def evaluate_s1(self):
-        self.thread.set_filename("evaluation\S1.mp4")
-        self.thread.setStartProcess(True)
 
     # All the function below are to control and receive from class VideoThread
     def terminate_thread(self):

@@ -5,6 +5,7 @@ import numpy as np
 class CNNLSTM:
     def __init__(self, parent=None):
         print("CNNLSTM Module Loaded")
+        print("Number of GPU Available:", len(tf.config.list_physical_devices('GPU')))
         self.model = None
     
     def mobilenet(self, weights_path=None):

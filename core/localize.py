@@ -297,12 +297,11 @@ class Localize:
                     # END CODE
                     return frame
                 
-    def mp_face_mesh_draw(self, frame):
-        print("A")
+    def mp_face_mesh_draw(self, frame):        
         with self.mp_face_mesh.FaceMesh(max_num_faces=1,
                                         refine_landmarks=True,
-                                        min_detection_confidence=0.5,
-                                        min_tracking_confidence=0.5) as face_mesh:
+                                        min_detection_confidence=0.8,
+                                        min_tracking_confidence=0.8) as face_mesh:
             results = face_mesh.process(frame)
             # To improve performance, optionally mark the image as not writeable to
             # pass by reference.

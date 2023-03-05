@@ -188,7 +188,7 @@ def read_video(filename):
     # Manipulate capture the folder name and remove .mp4 text
     target_folder_name = filename.split('/')[-1][:-4]    
 
-    target_full_path = os.path.join(target_ls[0], target_folder_name) 
+    target_full_path = os.path.join(target_ls[0], target_folder_name)     
     if not os.path.exists(target_full_path):
         os.mkdir(os.path.join(target_ls[0], target_folder_name))
        
@@ -243,20 +243,20 @@ def read_video(filename):
                 # print("Face detected : Frame", frame_count)
                 cv2.imshow('Localized Frame', faceROI)                 
 
-                # write frame to folder 
-                written_filename = "img" + str(frame_count).zfill(5) + ".jpg"
-                final_written_filename = os.path.join(target_full_path, written_filename)            
-                cv2.imwrite(final_written_filename, faceROI)     # save frame as JPEG file
+                # # write frame to folder 
+                # written_filename = "img" + str(frame_count).zfill(5) + ".jpg"
+                # final_written_filename = os.path.join(target_full_path, written_filename)            
+                # cv2.imwrite(final_written_filename, faceROI)     # save frame as JPEG file
 
             except Exception as e:
                 # print("Face NOT detected : Frame", frame_count)
                 cv2.imshow('Localized Frame', blank_frame)                
                   
                 # write frame to folder 
-                written_filename = "img" + str(frame_count).zfill(5) + ".jpg"
-                final_written_filename = os.path.join(target_full_path, written_filename)            
-                cv2.imwrite(final_written_filename, blank_frame)     # save frame as JPEG file  
-                failed_file_tracker.write(written_filename + "\n")                                               
+                # written_filename = "img" + str(frame_count).zfill(5) + ".jpg"
+                # final_written_filename = os.path.join(target_full_path, written_filename)            
+                # cv2.imwrite(final_written_filename, blank_frame)     # save frame as JPEG file  
+                # failed_file_tracker.write(written_filename + "\n")                                               
             
 
             frame_count += 1
