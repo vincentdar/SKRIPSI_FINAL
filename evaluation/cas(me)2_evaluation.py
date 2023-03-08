@@ -14,7 +14,7 @@ from typing import List, Mapping, Optional, Tuple, Union
 df = pd.read_csv("CAS(ME)^2evaluation.csv")
 
 test_video = [
-            r"D:\CASME\CASME(2)\rawvideo\rawvideo\s15\15_0101disgustingteeth.avi"
+            r"D:\CASME\CASME(2)\rawvideo\rawvideo\s15\15_0102disgustingteeth.avi"
             #   r"D:\CASME\CASME(2)\rawvideo\rawvideo\s36\36_0401girlcrashing.avi",
             #   r"D:\CASME\CASME(2)\rawvideo\rawvideo\s36\36_0505funnyinnovations.avi",
 
@@ -39,7 +39,7 @@ localization_algorithm = Localize()
 # Initialize Spotting Algorithm
 prediction_model = CNNLSTM()        
 # self.prediction_model.mobilenet("core/transfer_mobilenet_cnnlstm_tfrecord_2/cp.ckpt")
-prediction_model.mobilenet("D:\CodeProject2\SKRIPSI_FINAL\core\Transfer_mobilenet_cnnlstm_localize_tfrecord_pyramid_1/cp.ckpt")
+prediction_model.mobilenet("D:\CodeProject2\SKRIPSI_FINAL\core\Weights\Transfer_mobilenet_cnnlstm_localize_tfrecord_pyramid_1/cp.ckpt")
 
 # Pyramid
 # "D:\CodeProject2\SKRIPSI_FINAL\core\Transfer_mobilenet_cnnlstm_localize_tfrecord_pyramid_1/cp.ckpt"

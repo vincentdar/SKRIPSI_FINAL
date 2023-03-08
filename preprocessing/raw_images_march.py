@@ -34,8 +34,13 @@ file_ls = [
 
 #     "D:\Dataset Skripsi Batch Final\\25 FPS\S170.mov",
 #     "D:\Dataset Skripsi Batch Final\\25 FPS\S168.mov",
-    "D:\Dataset Skripsi Batch Final\\25 FPS\S174.mov",
+    # "D:\Dataset Skripsi Batch Final\\25 FPS\S174.mov",
 #     "D:\Dataset Skripsi Batch Final\\25 FPS\S22.mov",
+
+    "D:\Dataset Skripsi Batch Final\\25 FPS\S1.mp4",
+    "D:\Dataset Skripsi Batch Final\\25 FPS\S2.mp4",
+    "D:\Dataset Skripsi Batch Final\\25 FPS\S3.mp4",
+    "D:\Dataset Skripsi Batch Final\\25 FPS\S4.mp4",
 ]
 
 target_ls = [

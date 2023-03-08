@@ -11,6 +11,8 @@ from PyQt5.QtGui import QIcon, QPixmap, QColor, QImage, QTextCursor
 from core.localize import Localize
 from core.cnnlstm import CNNLSTM
 from core.headPoseEstimation import HeadPoseEstimation
+from core.settings import Settings
+from core.writer import Writer
 from evaluation.evaluation import MyEvaluation
 import sys
 import cv2
@@ -25,18 +27,23 @@ class VideoThread(QThread):
 
     def __init__(self):
         QThread.__init__(self)
-        
+        # self.settings = Settings()        
+        # self.settings.load()
+        # self.settings_dict = self.settings.settings_dict
         # Initialize Localization Algorithm
         self.localization_algorithm = Localize() 
 
-        # # Initialize Spotting Algorithm
+        # Initialize Spotting Algorithm
         self.prediction_model = CNNLSTM()        
         # # self.prediction_model.mobilenet("core/transfer_mobilenet_cnnlstm_tfrecord_2/cp.ckpt")
-        # self.prediction_model.mobilenet("core/transfer_mobilenet_unfreezelast20_pubspeak_cnnlstm_tfrecord_pyramid_1_loso_S4/cp.ckpt")
+        # self.prediction_model.mobilenet("D:\CodeProject2\SKRIPSI_FINAL\core\Weights\Transfer_mobilenet_cnnlstm_localize_tfrecord_pyramid_1/cp.ckpt")
+        self.prediction_model.mobilenet("training\checkpoint\local_mobilenet_cnnlstm_newpubspeak_10_epoch_val_s4/cp.ckpt")
+        
+        # Writer
+        self.writer = Writer()
+        self.destination_folder = "results"
         
         self.headPoseEstimation = HeadPoseEstimation()
-        # Initialize Settings
-        # self.eval = MyEvaluation()
 
         # Control the thread
         self.filename = ""  
@@ -44,12 +51,10 @@ class VideoThread(QThread):
         self.threadRunning = True
         self.interruptCurrentProcess = False
         self.startProcess = False
-
-        self.destination_folder = "results"
+        
+        
         
     def set_filename(self, filename):
-        # if filename == "evaluation\S1.mp4":
-        #     self.eval.read_label("evaluation\label_4sub.csv", "S1")
         self.filename = filename                 
 
     def setPause(self, pause):
@@ -74,13 +79,7 @@ class VideoThread(QThread):
         self.startProcess = startProcess
 
     def getStartProcess(self):
-        return self.startProcess
-    
-    def createDirectory(self, path):
-        try:
-            os.mkdir(path)
-        except Exception as e:                            
-            pass    
+        return self.startProcess          
 
     def run(self):
         while self.threadRunning: 
@@ -88,6 +87,7 @@ class VideoThread(QThread):
                 try:            
                     self.process_video() 
                 except Exception as e:
+                    print(e)
                     pass              
 
     def process_video(self):  
@@ -99,19 +99,16 @@ class VideoThread(QThread):
 
         # Get the minimum n (12) window
         sliding_window = []
+        norm_sliding_window = []
         itr = 0
         msg_pause_emit = True
 
         # Writing detection variables
-        pastWriting = False
-        currentWriting = False
-        detection = 1
-        video = self.filename.split('/')[-1]
-        video = video[:-4]
+        subject = self.filename.split('/')[-1]
+        subject = subject[:-4]
         
-        # Create Target Directory
-        self.createDirectory(os.path.join(self.destination_folder, video))
-        self.createDirectory(os.path.join(self.destination_folder, video, str(detection)))
+        # Create Target Directory        
+        self.writer.createDirectory(os.path.join(self.destination_folder, subject))                
 
         if (cap.isOpened()== False): 
             print("Error opening video stream or file")
@@ -130,54 +127,29 @@ class VideoThread(QThread):
             msg_pause_emit = True
             
             # Handle Interruption i.e change file to be processed
-            if self.interruptCurrentProcess:          
-                # self.localization_algorithm.plot_centroid_length(self.filename + ".png")                
+            if self.interruptCurrentProcess:                                         
                 self.append_output_log.emit("Processing Interrupted")
                 self.startProcess = False
                 self.interruptCurrentProcess = False
                 break
-
             
             # Read Frame from video
             ret, frame = cap.read()
-            if ret:
-                itr += 1                
+            if ret:                           
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                success, hpe_frame = self.headPoseEstimation.process(frame.copy())
+                # success, hpe_frame = self.headPoseEstimation.process(frame.copy())
                 # Send Bounding box frame
                 # bb_frame = self.localization_algorithm.mp_localize_bounding_box(frame)
                 # bb_frame = self.localization_algorithm.mp_face_mesh_crop_fixed_bb_centroid(frame.copy())
-                # bb_frame = self.localization_algorithm.mp_face_mesh_crop(frame)
+                bb_frame = self.localization_algorithm.mp_face_mesh_crop(frame)
                 # bb_frame = self.localization_algorithm.mp_face_mesh_crop_fixed_bb_nose_tip(frame)
 
                 # bb_frame = self.localization_algorithm.mp_localize_crop_scale(frame) # Ide Ko Hans
                 # bb_frame = self.localization_algorithm.mp_localize_crop(frame)                
                 try:
-                    # if success:   
-                    #     # print("ACCEPT FRAME", itr)  
-                    #     currentWriting = True                                           
-                    #     write_filename = "img" + str(itr).zfill(5) + ".jpg"
-                    #     write_path = os.path.join(self.destination_folder, video, str(detection), write_filename)                        
-                    #     cv2.imwrite(write_path, cv2.cvtColor(bb_frame, cv2.COLOR_RGB2BGR))
-                    #     pastWriting = True
-                    # else:
-                    #     # print("REJECT FRAME", itr)
-                    #     currentWriting = False
-                    #     if currentWriting != pastWriting:                                                                     
-                    #         detection += 1
-                    #         self.createDirectory(os.path.join(self.destination_folder, video, str(detection)))          
-                    #     pastWriting = False
-                    self.change_pixmap_signal.emit(hpe_frame)
-                    
-                except Exception as e:
-                    print("Emit Failed")
-                    self.change_pixmap_signal.emit(frame)
-
-                # cv2.waitKey(10)
-                
-
-                # Send normal frame
-                # self.change_pixmap_signal.emit(bb_frame)                
+                    self.change_pixmap_signal.emit(bb_frame)                    
+                except Exception as e:                    
+                    self.change_pixmap_signal.emit(frame)                                         
 
                 # Dlib Correlation Tracker
                 # bb_frame = self.localization_algorithm.dlib_correlation_tracker(frame)
@@ -186,35 +158,35 @@ class VideoThread(QThread):
                 # except Exception as e:
                 #     self.change_pixmap_signal.emit(frame)
                 
-                # # Process the frame using CNN-LSTM
-                # frame = cv2.resize(bb_frame, (224, 224), interpolation=cv2.INTER_AREA)
-                # rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) / 255
+                # Process the frame using CNN-LSTM
+                frame = cv2.resize(bb_frame, (224, 224), interpolation=cv2.INTER_AREA)
+                normalized = frame / 255
 
-                # sliding_window.append(rgb)
-                # # if len(sliding_window) > 12:                
-                # #     sliding_window.pop(0)
-
-                # if len(sliding_window) == 12:
-                #     np_sliding_window = np.expand_dims(np.array(sliding_window), axis=0) 
-                #     conf, label = self.prediction_model.process(np_sliding_window, conf=0.7)
-                #     start_frame = itr - 11
-                #     end_frame = itr
+                sliding_window.append(frame)
+                norm_sliding_window.append(normalized)
+                if len(norm_sliding_window) > 12:
+                    sliding_window.pop(0)            
+                    norm_sliding_window.pop(0)
+                
+                if len(norm_sliding_window) == 12:
+                    np_sliding_window = np.expand_dims(np.array(norm_sliding_window), axis=0) 
+                    conf, label = self.prediction_model.process(np_sliding_window, conf=0.7)
+                    start_frame = itr - 11
+                    end_frame = itr
+                                        
+                    for image in sliding_window:                        
+                        self.writer.writeToImages(image, start_frame, subject, label) 
+                        start_frame += 1                        
                         
-                #     sliding_window = []                         
-                #     print("Label of frame", start_frame, "to", end_frame, "Label", label, "Confidence Level:", conf)
-                #     # Evaluation
-                #     if self.eval != None:
-                #         self.eval.count(start_frame, end_frame, label)
+                    sliding_window = []
+                    norm_sliding_window = []                         
+                    print("Label of frame", start_frame, "to", end_frame, "Label", label, "Confidence Level:", conf)                    
+                                                       
                 itr += 1
             else:                              
-                # if self.eval != None:                    
-                #     self.eval.to_csv()
-                #     self.eval.print_total()
-                #     self.eval.reset_count()
                 self.append_output_log.emit("Video Finished")                    
                 self.startProcess = False 
-                self.filename = ""  
-                # self.localization_algorithm.plot_centroid_length(self.filename + ".png")                                                  
+                self.filename = ""                                                                   
                 break
                     
 
@@ -222,7 +194,7 @@ class VideoThread(QThread):
 
 class VideoWindow(QMainWindow):
     def __init__(self, parent=None):
-        super(VideoWindow, self).__init__(parent)
+        super(VideoWindow, self).__init__(parent)        
         self.setWindowTitle("ISpeak Micro-expressions Detection")
         self.disply_width = 640
         self.display_height = 480
@@ -394,9 +366,7 @@ class VideoWindow(QMainWindow):
         
 
 if __name__ == '__main__':    
-    app = QApplication(sys.argv)   
-    # setup stylesheet
-    # app.setStyleSheet(qdarkgraystyle.load_stylesheet()) 
+    app = QApplication(sys.argv)       
     player = VideoWindow()
     player.resize(640, 480)
     player.show()

@@ -17,6 +17,8 @@ class CNNLSTM:
         cnn.add(mobilenet)
         # cnn.add(tf.keras.layers.Flatten())
         cnn.add(tf.keras.layers.GlobalAveragePooling2D())
+        
+        cnn.add(tf.keras.layers.Dense(32)) # Just for the sake of it (Local Training)
 
         # RNN Model
         rnn = tf.keras.models.Sequential()
@@ -28,13 +30,11 @@ class CNNLSTM:
         rnn.build(input_shape=(None, 12, 224, 224, 3)) 
 
         rnn.compile(loss='binary_crossentropy',
-                    optimizer=tf.keras.optimizers.legacy.Adam(),
+                    optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
                     metrics=['accuracy'])
-
-        # rnn.load_weights("transfer_mobilenet_cnnlstm_tfrecord/cp.ckpt").expect_partial() 
+        
         rnn.load_weights(weights_path).expect_partial()    
-        self.model = rnn        
-        # self.model.load_weights("transfer_mobilenet_cnnlstm_tfrecord/cp.ckpt").expect_partial()    
+        self.model = rnn                   
 
     def process(self, data, conf=0.5):                
         pred = np.squeeze(self.model.predict(data, verbose=0))
