@@ -95,8 +95,37 @@ class Localize:
 
                     xleft, ytop=rect_start_point
                     xright, ybot=rect_end_point
+
+                    # Padding
+                    padding_x = int((xright - xleft) * 0.05)
+                    padding_y = int((ybot - ytop) * 0.05)   
+
+                    xleft = xleft - padding_x
+                    ytop = ytop - padding_y
+                    xright = xright + padding_x
+                    ybot = ybot + padding_y
+
+
+                    # Find the distance and take the longest
+                    x_delta = xright - xleft
+                    y_delta = ybot - ytop
+
+                    bb_length = max(x_delta, y_delta)
+
+                    # Centroid generation
+                    x_center = int(round((xright + xleft) / 2))
+                    y_center = int(round((ytop + ybot) / 2))
+
+                    # Centroid Tracker
+                    self.centroid_tracker.append((x_center, y_center))
+
+                    xleft = x_center - int(round(0.5 * bb_length))
+                    ytop = y_center - int(round(0.5 * bb_length))
+                    xright = x_center + int(round(0.5 * bb_length))
+                    ybot = y_center + int(round(0.5 * bb_length))
+
                     faceROI = image[ytop:ybot,xleft:xright]
-                    faceROI = cv2.resize(faceROI, (224, 224), interpolation=cv2.INTER_CUBIC)
+                    faceROI = cv2.resize(faceROI, (224, 224), interpolation=cv2.INTER_AREA)
                     break
         if return_image:   
             return faceROI

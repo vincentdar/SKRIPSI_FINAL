@@ -18,7 +18,7 @@ class Localize:
 
         # Tracking / Temporal Smoothing Algorithm
         self.tracked_point = []
-        self.blank_frame = np.zeros((224, 224, 3))
+        self.blank_frame = np.zeros((224, 224, 3), dtype=np.uint8)
         self.corr_tracker = dlib.correlation_tracker()
         self.corr_reset_iterator = 0
 
@@ -100,7 +100,7 @@ class Localize:
                     xleft, ytop=rect_start_point
                     xright, ybot=rect_end_point
                     faceROI = image[ytop:ybot,xleft:xright]
-                    faceROI = cv2.resize(faceROI, (224, 224), interpolation=cv2.INTER_CUBIC)
+                    faceROI = cv2.resize(faceROI, (224, 224), interpolation=cv2.INTER_AREA)
                     break
         if return_image:   
             return faceROI

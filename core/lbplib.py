@@ -179,6 +179,33 @@ def spatialLBP(img, zero_padding=True):
                                 
 
         return lbp_image 
+    
+
+def LBPonThreeChannel(img):
+    blue = img[:,:,0]
+    green = img[:,:,1]
+    red = img[:,:,2]
+
+    lbp_blue = spatialLBP(blue)
+    lbp_green = spatialLBP(green)
+    lbp_red = spatialLBP(red)
+
+    # blank = np.zeros((224, 224, 3))
+    # blank = [255, 255, 255]
+    # blank_blue = blank.copy()
+    # blank_blue[:,:,0] = lbp_blue
+    # print(blank_blue)
+    
+    # blank_green = blank.copy()
+    # blank_green[:,:,1] = lbp_green
+    # print(blank_green)
+    
+    # blank_red = blank.copy()
+    # blank_red[:,:,2] = lbp_red
+
+    return lbp_blue, lbp_green, lbp_red
+    
+
 
 def chiSquareDistance(x, y):     
     """

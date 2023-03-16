@@ -6,12 +6,13 @@ import numpy as np
 import mediapipe as mp
 import math
 import os
-from localize import Localize
+from core.localize import Localize
+from core.lbplib import spatialLBP, LBPonThreeChannel
 from typing import List, Mapping, Optional, Tuple, Union
 
 
 file_ls = [
-    # "D:\Dataset Skripsi Batch Final\\25 FPS\S1.mp4",
+    "D:\Dataset Skripsi Batch Final\\25 FPS\S1.mp4",
     # "D:\Dataset Skripsi Batch Final\\25 FPS\S2.mp4",
     # "D:\Dataset Skripsi Batch Final\\25 FPS\S3.mp4",
     # "D:\Dataset Skripsi Batch Final\\25 FPS\S4.mp4",   
@@ -31,19 +32,19 @@ file_ls = [
     # "D:\Dataset Skripsi Batch Final\\25 FPS\S98.mov",
     # "D:\Dataset Skripsi Batch Final\\25 FPS\S101.mov", 
 
-    "D:\Dataset Skripsi Batch Final\\25 FPS\S117.mov",
-    "D:\Dataset Skripsi Batch Final\\25 FPS\S118.mov",
-    "D:\Dataset Skripsi Batch Final\\25 FPS\S124.mov",
-    "D:\Dataset Skripsi Batch Final\\25 FPS\S125.mov", 
+    # "D:\Dataset Skripsi Batch Final\\25 FPS\S117.mov",
+    # "D:\Dataset Skripsi Batch Final\\25 FPS\S118.mov",
+    # "D:\Dataset Skripsi Batch Final\\25 FPS\S124.mov",
+    # "D:\Dataset Skripsi Batch Final\\25 FPS\S125.mov", 
 
-    "D:\Dataset Skripsi Batch Final\\25 FPS\S130.mov",
-    "D:\Dataset Skripsi Batch Final\\25 FPS\S160.mov",
-    "D:\Dataset Skripsi Batch Final\\25 FPS\S168.mov",
-    "D:\Dataset Skripsi Batch Final\\25 FPS\S170.mov", 
+    # "D:\Dataset Skripsi Batch Final\\25 FPS\S130.mov",
+    # "D:\Dataset Skripsi Batch Final\\25 FPS\S160.mov",
+    # "D:\Dataset Skripsi Batch Final\\25 FPS\S168.mov",
+    # "D:\Dataset Skripsi Batch Final\\25 FPS\S170.mov", 
 ]
 
 target_ls = [
-    "D:\Dataset Skripsi Batch Final Image Face Detection",
+    "D:\Dataset Skripsi Batch Final LBP Face Detection",
     ]
 
 
@@ -81,22 +82,21 @@ def read_video(filename):
         ret, frame = cap.read()
         faceROI = np.zeros((224, 224, 3))
         if ret == True:                                  
-            try:  
-                          
-                # detected, xleft, ytop, xright, ybot = localization_algorithm.mp_face_mesh_crop_preprocessing(frame)                                
-                # faceROI = frame[ytop:ybot, xleft:xright]
-                # faceROI = cv2.resize(faceROI, (224, 224), interpolation=cv2.INTER_AREA)
-                # print("Face detected : Frame", frame_count)
-                # facemesh = localization_algorithm.mp_face_mesh_crop(frame)   
-                # cv2.imshow('Face Mesh', facemesh)  
+            try:                          
+                faceROI = localization_algorithm.localizeFace_mediapipe(frame) 
 
-                faceROI = localization_algorithm.localizeFace_mediapipe(frame)     
-                cv2.imshow('Face Detection', faceROI)                 
+                faceROI = spatialLBP(cv2.cvtColor(faceROI, cv2.COLOR_BGR2GRAY))
+                # blue, green, red = LBPonThreeChannel(faceROI)                  
+                
+                cv2.imshow('Face Detection', faceROI)   
+                # cv2.imshow('Face Detection Blue', blue)                 
+                # cv2.imshow('Face Detection Green', green)                 
+                # cv2.imshow('Face Detection Red', red)                 
 
                 # write frame to folder 
-                written_filename = "img" + str(frame_count).zfill(5) + ".jpg"
-                final_written_filename = os.path.join(target_full_path, written_filename)            
-                cv2.imwrite(final_written_filename, faceROI)     # save frame as JPEG file
+                # written_filename = "img" + str(frame_count).zfill(5) + ".jpg"
+                # final_written_filename = os.path.join(target_full_path, written_filename)            
+                # cv2.imwrite(final_written_filename, faceROI)     # save frame as JPEG file
 
             except Exception as e:      
                 print("Exception Occured")          
@@ -104,10 +104,10 @@ def read_video(filename):
                 cv2.imshow('Face Detection', blank_frame)                
                   
                 # write frame to folder 
-                written_filename = "img" + str(frame_count).zfill(5) + ".jpg"
-                final_written_filename = os.path.join(target_full_path, written_filename)            
-                cv2.imwrite(final_written_filename, blank_frame)     # save frame as JPEG file  
-                failed_file_tracker.write(written_filename + "\n")            
+                # written_filename = "img" + str(frame_count).zfill(5) + ".jpg"
+                # final_written_filename = os.path.join(target_full_path, written_filename)            
+                # cv2.imwrite(final_written_filename, blank_frame)     # save frame as JPEG file  
+                # failed_file_tracker.write(written_filename + "\n")            
             frame_count += 1
             
             # Press Q on keyboard to exit

@@ -40,7 +40,13 @@ def plot_video(ds, num_of_takes):
 
 def create_mobilenet():  
   mobilenet = tf.keras.applications.MobileNet(input_shape=(224, 224, 3), include_top=False)
-  mobilenet.trainable = False
+  # mobilenet.trainable = False
+
+  # If you wanted to modify the mobilenet layer
+  # Freeze all layer except for the last 20
+  mobilenet.trainable = True
+  for layer in mobilenet.layers[:-20]:
+      layer.trainable = False
 
   # CNN Model
   cnn = tf.keras.models.Sequential()  
@@ -48,22 +54,74 @@ def create_mobilenet():
   # cnn.add(tf.keras.layers.Flatten())
 
   cnn.add(tf.keras.layers.GlobalAveragePooling2D())
-  cnn.add(tf.keras.layers.Dense(32))
+  # cnn.add(tf.keras.layers.Dense(32))
 
   # RNN Model
   rnn = tf.keras.models.Sequential()
   rnn.add(tf.keras.layers.TimeDistributed(cnn))
   rnn.add(tf.keras.layers.LSTM(32))
+
   rnn.add(tf.keras.layers.Dense(1, activation="sigmoid"))
 
-
   rnn.build(input_shape=(None, 12, 224, 224, 3)) 
-
-  rnn.compile(loss='binary_crossentropy',
-              optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
-              metrics=['accuracy'])
+  print(rnn.summary())
   
   return rnn
+
+def create_mobilenet_bilstm():  
+  mobilenet = tf.keras.applications.MobileNet(input_shape=(224, 224, 3), include_top=False)
+  # mobilenet.trainable = False
+
+  # If you wanted to modify the mobilenet layer
+  # Freeze all layer except for the last 20
+  mobilenet.trainable = True
+  for layer in mobilenet.layers[:-20]:
+      layer.trainable = False
+
+  # CNN Model
+  cnn = tf.keras.models.Sequential()  
+  cnn.add(mobilenet)
+  # cnn.add(tf.keras.layers.Flatten())
+
+  cnn.add(tf.keras.layers.GlobalAveragePooling2D())
+  # cnn.add(tf.keras.layers.Dense(32))
+
+  # RNN Model
+  rnn = tf.keras.models.Sequential()
+  rnn.add(tf.keras.layers.TimeDistributed(cnn))
+  rnn.add(tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(32)))
+  rnn.add(tf.keras.layers.Dense(1, activation="sigmoid"))
+
+  rnn.build(input_shape=(None, 12, 224, 224, 3)) 
+  print(rnn.summary())
+  
+  return rnn
+
+
+def create_C3D():
+  # Inspiration is Multi Segment CNN: https://openaccess.thecvf.com/content_cvpr_2016/papers/Shou_Temporal_Action_Localization_CVPR_2016_paper.pdf
+  inputs = tf.keras.Input(shape=(12, 224, 224, 3))
+  x = tf.keras.layers.Conv3D(64, kernel_size=(3, 3, 3), strides=(1, 1, 1), activation="relu")(inputs)
+  x = tf.keras.layers.MaxPool3D(pool_size=(1,2,2))(x)
+  x = tf.keras.layers.Conv3D(128, kernel_size=(3, 3, 3), strides=(1, 1, 1), activation="relu")(x)  
+  x = tf.keras.layers.MaxPool3D(pool_size=(2,2,2))(x)
+  x = tf.keras.layers.Conv3D(256, kernel_size=(3, 3, 3), strides=(1, 1, 1), activation="relu")(x)    
+  x = tf.keras.layers.MaxPool3D(pool_size=(2,2,2))(x)   
+  # x = tf.keras.layers.Flatten()(x) 
+  x = tf.keras.layers.GlobalAveragePooling3D()(x)  
+  outputs = tf.keras.layers.Dense(1)(x)
+
+  model = tf.keras.Model(inputs=inputs, outputs=outputs, name="multisegmentcnn")  
+  return model
+
+
+
+def compile_model(model):
+  model.compile(loss='binary_crossentropy',
+                optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
+                metrics=['accuracy'])
+  
+  return model
 
 def read_dataframe(filename):
   df = pd.read_csv(filename)  
@@ -89,7 +147,7 @@ if __name__ == "__main__":
   
   
 
-  checkpoint_path = "checkpoint/local_mobilenet_cnnlstm_flatten_newpubspeak_10_epoch_val_s4/cp.ckpt"
+  checkpoint_path = "checkpoint/local_mobilenet_cnnbilstm_newpubspeak_10_epoch_val_s4/cp.ckpt"
   checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(checkpoint_path,
                                                           monitor='val_accuracy',
                                                           save_weights_only=True,
@@ -97,10 +155,14 @@ if __name__ == "__main__":
                                                           verbose=1)
     
 
-  train_ds = train_ds.prefetch(tf.data.AUTOTUNE).batch(4)
-  test_ds = test_ds.prefetch(tf.data.AUTOTUNE).batch(4)
+  train_ds = train_ds.prefetch(tf.data.AUTOTUNE).batch(1)
+  test_ds = test_ds.prefetch(tf.data.AUTOTUNE).batch(1)
   
-  model = create_mobilenet()
+  # Mobilenet
+  # model = create_mobilenet()
+  model = create_C3D()
+  # model = create_mobilenet_bilstm()
+  model = compile_model(model)
 
   history = model.fit(train_ds,
                       validation_data=test_ds,

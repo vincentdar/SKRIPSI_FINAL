@@ -7,6 +7,12 @@ class CNNLSTM:
         print("CNNLSTM Module Loaded")
         print("Number of GPU Available:", len(tf.config.list_physical_devices('GPU')))
         self.model = None
+
+    def test_cudnn(self):
+        x = tf.zeros((3, 3), dtype=tf.float32)
+        y = tf.ones((3, 3), dtype=tf.float32)
+        z = tf.matmul(x, y)
+
     
     def mobilenet(self, weights_path=None):
         mobilenet = tf.keras.applications.MobileNet(input_shape=(224, 224, 3), include_top=False)
@@ -16,9 +22,8 @@ class CNNLSTM:
         cnn = tf.keras.models.Sequential()
         cnn.add(mobilenet)
         # cnn.add(tf.keras.layers.Flatten())
-        cnn.add(tf.keras.layers.GlobalAveragePooling2D())
-        
-        cnn.add(tf.keras.layers.Dense(32)) # Just for the sake of it (Local Training)
+        cnn.add(tf.keras.layers.GlobalAveragePooling2D())        
+        # cnn.add(tf.keras.layers.Dense(32)) # Just for the sake of it (Local Training)
 
         # RNN Model
         rnn = tf.keras.models.Sequential()

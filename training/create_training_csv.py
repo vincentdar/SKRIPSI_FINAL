@@ -31,7 +31,7 @@ def create_training_csv(data_path, label, writer):
                                                                                      
 
 if __name__ == "__main__":
-    filewriter = open('training_pubspeak.csv',  'w')
+    filewriter = open('training_pubspeak_face_detection.csv',  'w')
     filewriter.write("1,2,3,4,5,6,7,8,9,10,11,12,Label\n")
     create_training_csv(positive_data_path, 1, filewriter)
     create_training_csv(negative_data_path, 0, filewriter)

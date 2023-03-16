@@ -34,10 +34,11 @@ class VideoThread(QThread):
         self.localization_algorithm = Localize() 
 
         # Initialize Spotting Algorithm
-        self.prediction_model = CNNLSTM()        
+        self.prediction_model = CNNLSTM()     
+        self.prediction_model.test_cudnn()   
         # # self.prediction_model.mobilenet("core/transfer_mobilenet_cnnlstm_tfrecord_2/cp.ckpt")
         # self.prediction_model.mobilenet("D:\CodeProject2\SKRIPSI_FINAL\core\Weights\Transfer_mobilenet_cnnlstm_localize_tfrecord_pyramid_1/cp.ckpt")
-        self.prediction_model.mobilenet("training\checkpoint\local_mobilenet_cnnlstm_newpubspeak_10_epoch_val_s4/cp.ckpt")
+        self.prediction_model.mobilenet("training\checkpoint\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak_10_epoch_val_s4/cp.ckpt")
         
         # Writer
         self.writer = Writer()
@@ -147,7 +148,7 @@ class VideoThread(QThread):
                 # bb_frame = self.localization_algorithm.mp_localize_crop_scale(frame) # Ide Ko Hans
                 # bb_frame = self.localization_algorithm.mp_localize_crop(frame)                
                 try:
-                    self.change_pixmap_signal.emit(bb_frame)                    
+                    self.change_pixmap_signal.emit(bb_frame)                                                          
                 except Exception as e:                    
                     self.change_pixmap_signal.emit(frame)                                         
 
@@ -157,7 +158,6 @@ class VideoThread(QThread):
                 #     self.change_pixmap_signal.emit(bb_frame)
                 # except Exception as e:
                 #     self.change_pixmap_signal.emit(frame)
-                
                 # Process the frame using CNN-LSTM
                 frame = cv2.resize(bb_frame, (224, 224), interpolation=cv2.INTER_AREA)
                 normalized = frame / 255
@@ -171,16 +171,18 @@ class VideoThread(QThread):
                 if len(norm_sliding_window) == 12:
                     np_sliding_window = np.expand_dims(np.array(norm_sliding_window), axis=0) 
                     conf, label = self.prediction_model.process(np_sliding_window, conf=0.7)
+                    
                     start_frame = itr - 11
                     end_frame = itr
+                    print("Label of frame", start_frame, "to", end_frame, "Label", label, "Confidence Level:", conf)
                                         
                     for image in sliding_window:                        
                         self.writer.writeToImages(image, start_frame, subject, label) 
                         start_frame += 1                        
                         
                     sliding_window = []
-                    norm_sliding_window = []                         
-                    print("Label of frame", start_frame, "to", end_frame, "Label", label, "Confidence Level:", conf)                    
+                    norm_sliding_window = []               
+                
                                                        
                 itr += 1
             else:                              
