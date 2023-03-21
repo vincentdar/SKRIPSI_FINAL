@@ -13,7 +13,9 @@ from core.cnnlstm import CNNLSTM
 from core.headPoseEstimation import HeadPoseEstimation
 from core.settings import Settings
 from core.writer import Writer
+from core.report import Report
 from evaluation.evaluation import MyEvaluation
+import pandas as pd
 import sys
 import cv2
 import numpy as np
@@ -35,25 +37,29 @@ class VideoThread(QThread):
 
         # Initialize Spotting Algorithm
         self.prediction_model = CNNLSTM()     
-        self.prediction_model.test_cudnn()   
-        # # self.prediction_model.mobilenet("core/transfer_mobilenet_cnnlstm_tfrecord_2/cp.ckpt")
-        # self.prediction_model.mobilenet("D:\CodeProject2\SKRIPSI_FINAL\core\Weights\Transfer_mobilenet_cnnlstm_localize_tfrecord_pyramid_1/cp.ckpt")
-        self.prediction_model.mobilenet("training\checkpoint\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak_10_epoch_val_s4/cp.ckpt")
+        self.prediction_model.test_cudnn()          
+        # self.prediction_model.mobilenet_binary("training\checkpoint\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_10_epoch/cp.ckpt")
+        self.prediction_model.mobilenet_categorical("training\checkpoint\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_multiclass_merged_10_epoch/cp.ckpt")        
         
         # Writer
         self.writer = Writer()
-        self.destination_folder = "results"
+        self.destination_folder = "results_categorical"        
         
-        self.headPoseEstimation = HeadPoseEstimation()
+        # Report
+        self.report = Report()
+        self.report_folder = "reports"
+        # HPE
+        # self.headPoseEstimation = HeadPoseEstimation()
 
+        # Class Names
+        self.categorical_class_names = ["Unknown", "Showing Emotions", "Blank Face", "Reading", "Head Tilt", "Occlusion"]
+        self.binary_class_names = ["Negative", "Positive"]
         # Control the thread
         self.filename = ""  
         self.ourPause = False
         self.threadRunning = True
         self.interruptCurrentProcess = False
-        self.startProcess = False
-        
-        
+        self.startProcess = False       
         
     def set_filename(self, filename):
         self.filename = filename                 
@@ -107,9 +113,11 @@ class VideoThread(QThread):
         # Writing detection variables
         subject = self.filename.split('/')[-1]
         subject = subject[:-4]
+
+        self.success_frame = np.full((224, 224, 3), (0, 255, 0), dtype=np.int8)      
         
         # Create Target Directory        
-        self.writer.createDirectory(os.path.join(self.destination_folder, subject))                
+        self.writer.createDirectory(os.path.join(self.destination_folder, subject))                     
 
         if (cap.isOpened()== False): 
             print("Error opening video stream or file")
@@ -128,7 +136,9 @@ class VideoThread(QThread):
             msg_pause_emit = True
             
             # Handle Interruption i.e change file to be processed
-            if self.interruptCurrentProcess:                                         
+            if self.interruptCurrentProcess:  
+                self.report.writeToCSV(subject)
+                self.report.clearPredictions()                                         
                 self.append_output_log.emit("Processing Interrupted")
                 self.startProcess = False
                 self.interruptCurrentProcess = False
@@ -170,23 +180,33 @@ class VideoThread(QThread):
                 
                 if len(norm_sliding_window) == 12:
                     np_sliding_window = np.expand_dims(np.array(norm_sliding_window), axis=0) 
-                    conf, label = self.prediction_model.process(np_sliding_window, conf=0.7)
+                    # conf, label = self.prediction_model.process(np_sliding_window, conf=0.7)
+                    conf, label = self.prediction_model.process_categorical(np_sliding_window)
                     
                     start_frame = itr - 11
                     end_frame = itr
+                    self.report.addPredictions_Categorical(self.categorical_class_names, start_frame, end_frame, conf, label)
+                    # self.report.addPredictions_Binary(self.binary_class_names, start_frame, end_frame, conf, label)
+                    
                     print("Label of frame", start_frame, "to", end_frame, "Label", label, "Confidence Level:", conf)
                                         
-                    for image in sliding_window:                        
-                        self.writer.writeToImages(image, start_frame, subject, label) 
-                        start_frame += 1                        
+                    # for image in sliding_window:                        
+                    #     # Binary Writing
+                    #     self.writer.writeToImages(image, start_frame, subject, label) 
+                    #     # Categorical Writing
+                    #     self.writer.writeToImagesCategorical(image, start_frame, subject, label) 
+                    #     start_frame += 1                        
                         
                     sliding_window = []
                     norm_sliding_window = []               
                 
                                                        
                 itr += 1
-            else:                              
-                self.append_output_log.emit("Video Finished")                    
+            else:                 
+                self.report.writeToCSV(subject)
+                self.report.clearPredictions()             
+                self.append_output_log.emit("Video Finished") 
+                self.change_pixmap_signal.emit(self.success_frame)                    
                 self.startProcess = False 
                 self.filename = ""                                                                   
                 break

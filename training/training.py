@@ -132,8 +132,8 @@ def read_dataframe(filename):
 
 
 if __name__ == "__main__":                 
-  train_features, train_labels = read_dataframe("training_pubspeak.csv")
-  test_features, test_labels = read_dataframe("testing_pubspeak.csv")
+  train_features, train_labels = read_dataframe("binary/training_pubspeak_21032023_face_detection.csv")
+  test_features, test_labels = read_dataframe("binary/testing_pubspeak_21032023_face_detection.csv")
 
   train_ds = tf.data.Dataset.from_generator(create_dataset,
                                           args=(tf.convert_to_tensor(train_features), tf.convert_to_tensor(train_labels)),
@@ -147,7 +147,7 @@ if __name__ == "__main__":
   
   
 
-  checkpoint_path = "checkpoint/local_mobilenet_cnnbilstm_newpubspeak_10_epoch_val_s4/cp.ckpt"
+  checkpoint_path = "checkpoint/local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_10_epoch/cp.ckpt"
   checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(checkpoint_path,
                                                           monitor='val_accuracy',
                                                           save_weights_only=True,
@@ -155,12 +155,12 @@ if __name__ == "__main__":
                                                           verbose=1)
     
 
-  train_ds = train_ds.prefetch(tf.data.AUTOTUNE).batch(1)
-  test_ds = test_ds.prefetch(tf.data.AUTOTUNE).batch(1)
+  train_ds = train_ds.prefetch(tf.data.AUTOTUNE).batch(4)
+  test_ds = test_ds.prefetch(tf.data.AUTOTUNE).batch(4)
   
   # Mobilenet
-  # model = create_mobilenet()
-  model = create_C3D()
+  model = create_mobilenet()
+  # model = create_C3D()
   # model = create_mobilenet_bilstm()
   model = compile_model(model)
 

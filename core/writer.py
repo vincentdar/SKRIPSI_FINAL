@@ -4,7 +4,8 @@ import numpy as np
 
 class Writer:
     def __init__(self):
-        self.destination_folder = "results"  
+        self.destination_folder = "results" 
+        self.categorical_destination_folder = "results_categorical" 
         self.detection = 0
         self.current_label = -1
         self.past_label = -1              
@@ -26,7 +27,14 @@ class Writer:
             self.detection += 1            
             self.createDirectory(os.path.join(self.destination_folder, subject, str(self.detection) + "_" + str(self.current_label)))
         self.past_label = label
+        self.saveImages(image, frame_number, subject)
 
+    def writeToImagesCategorical(self, image, frame_number, subject, label):
+        self.current_label = label
+        if self.current_label != self.past_label:
+            self.detection += 1            
+            self.createDirectory(os.path.join(self.categorical_destination_folder, subject, str(self.detection) + "_" + str(self.current_label)))
+        self.past_label = label
         self.saveImages(image, frame_number, subject)
 
     def reset_state(self):

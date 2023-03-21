@@ -31,15 +31,25 @@ file_ls = [
     # "D:\Dataset Skripsi Batch Final\\25 FPS\S98.mov",
     # "D:\Dataset Skripsi Batch Final\\25 FPS\S101.mov", 
 
-    "D:\Dataset Skripsi Batch Final\\25 FPS\S117.mov",
-    "D:\Dataset Skripsi Batch Final\\25 FPS\S118.mov",
-    "D:\Dataset Skripsi Batch Final\\25 FPS\S124.mov",
-    "D:\Dataset Skripsi Batch Final\\25 FPS\S125.mov", 
+    # "D:\Dataset Skripsi Batch Final\\25 FPS\S117.mov",
+    # "D:\Dataset Skripsi Batch Final\\25 FPS\S118.mov",
+    # "D:\Dataset Skripsi Batch Final\\25 FPS\S124.mov",
+    # "D:\Dataset Skripsi Batch Final\\25 FPS\S125.mov", 
 
-    "D:\Dataset Skripsi Batch Final\\25 FPS\S130.mov",
-    "D:\Dataset Skripsi Batch Final\\25 FPS\S160.mov",
-    "D:\Dataset Skripsi Batch Final\\25 FPS\S168.mov",
-    "D:\Dataset Skripsi Batch Final\\25 FPS\S170.mov", 
+    # "D:\Dataset Skripsi Batch Final\\25 FPS\S130.mov",
+    # "D:\Dataset Skripsi Batch Final\\25 FPS\S160.mov",
+    # "D:\Dataset Skripsi Batch Final\\25 FPS\S168.mov",
+    # "D:\Dataset Skripsi Batch Final\\25 FPS\S170.mov", 
+
+    # "D:\Dataset Skripsi Batch Final\\25 FPS\S30.mov",
+    # "D:\Dataset Skripsi Batch Final\\25 FPS\S31.mov",
+    # "D:\Dataset Skripsi Batch Final\\25 FPS\S32.mov",
+    # "D:\Dataset Skripsi Batch Final\\25 FPS\S33.mov", 
+
+    "D:\Dataset Skripsi Batch Final\\25 FPS\S5.mp4", 
+
+    
+
 ]
 
 target_ls = [
