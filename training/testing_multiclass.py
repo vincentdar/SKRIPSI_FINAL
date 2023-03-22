@@ -26,8 +26,7 @@ def create_dataset(features, label):
       images.append(image)      
 
     video = tf.convert_to_tensor(images, dtype=tf.float32)    
-    yield video, tf.one_hot(label[i], depth=6)  
-    break
+    yield video, tf.one_hot(label[i], depth=6)      
 
     # idk why images variable automatically empties itself
 
@@ -149,7 +148,7 @@ if __name__ == "__main__":
   class_names = ["Unknown", "Showing Emotions", "Blank Face", "Reading",
                    "Head Tilt", "Occlusion"]                
   
-  test_features, test_labels = read_dataframe("testing_pubspeak15032023_multiclass_merged_face_detection.csv")
+  test_features, test_labels = read_dataframe("categorical/testing_pubspeak15032023_multiclass_merged_face_detection.csv")
   
   test_ds = tf.data.Dataset.from_generator(create_dataset,
                                         args=(tf.convert_to_tensor(test_features), tf.convert_to_tensor(test_labels)),

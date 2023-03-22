@@ -107,6 +107,7 @@ class VideoThread(QThread):
         # Get the minimum n (12) window
         sliding_window = []
         norm_sliding_window = []
+        full_frame_sliding_window = []
         itr = 0
         msg_pause_emit = True
 
@@ -137,6 +138,7 @@ class VideoThread(QThread):
             
             # Handle Interruption i.e change file to be processed
             if self.interruptCurrentProcess:  
+                self.writer.close_videowriter()   
                 self.report.writeToCSV(subject)
                 self.report.clearPredictions()                                         
                 self.append_output_log.emit("Processing Interrupted")
@@ -146,8 +148,9 @@ class VideoThread(QThread):
             
             # Read Frame from video
             ret, frame = cap.read()
-            if ret:                           
-                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            if ret:     
+                full_frame = frame.copy()                      
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)                
                 # success, hpe_frame = self.headPoseEstimation.process(frame.copy())
                 # Send Bounding box frame
                 # bb_frame = self.localization_algorithm.mp_localize_bounding_box(frame)
@@ -174,9 +177,11 @@ class VideoThread(QThread):
 
                 sliding_window.append(frame)
                 norm_sliding_window.append(normalized)
+                full_frame_sliding_window.append(full_frame)
                 if len(norm_sliding_window) > 12:
                     sliding_window.pop(0)            
                     norm_sliding_window.pop(0)
+                    full_frame_sliding_window.pop(0)
                 
                 if len(norm_sliding_window) == 12:
                     np_sliding_window = np.expand_dims(np.array(norm_sliding_window), axis=0) 
@@ -189,20 +194,28 @@ class VideoThread(QThread):
                     # self.report.addPredictions_Binary(self.binary_class_names, start_frame, end_frame, conf, label)
                     
                     print("Label of frame", start_frame, "to", end_frame, "Label", label, "Confidence Level:", conf)
-                                        
+
+                    # Image          
                     # for image in sliding_window:                        
-                    #     # Binary Writing
-                    #     self.writer.writeToImages(image, start_frame, subject, label) 
-                    #     # Categorical Writing
-                    #     self.writer.writeToImagesCategorical(image, start_frame, subject, label) 
-                    #     start_frame += 1                        
+                    #     # # Binary Writing
+                    #     # self.writer.writeToImages(image, start_frame, subject, label) 
+                    #     # # Categorical Writing
+                    #     # self.writer.writeToImagesCategorical(image, start_frame, subject, label)                         
+                    #     start_frame += 1   
+
+                    # Video
+                    for image in full_frame_sliding_window:                        
+                        self.writer.writeToVideo(image, subject, label, self.categorical_class_names)
+                        start_frame += 1                         
                         
                     sliding_window = []
-                    norm_sliding_window = []               
+                    norm_sliding_window = []  
+                    full_frame_sliding_window = []              
                 
                                                        
                 itr += 1
-            else:                 
+            else:        
+                self.writer.close_videowriter()         
                 self.report.writeToCSV(subject)
                 self.report.clearPredictions()             
                 self.append_output_log.emit("Video Finished") 

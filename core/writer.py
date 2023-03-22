@@ -4,11 +4,18 @@ import numpy as np
 
 class Writer:
     def __init__(self):
+        # Image
         self.destination_folder = "results" 
         self.categorical_destination_folder = "results_categorical" 
         self.detection = 0
         self.current_label = -1
-        self.past_label = -1              
+        self.past_label = -1     
+
+        # Video
+        self.video_writer = None   
+        self.video_destination_folder = "results_video" 
+        
+             
 
     def createDirectory(self, path):
         try:
@@ -40,4 +47,24 @@ class Writer:
     def reset_state(self):
         self.detection = 0
         self.current_label = -1
-        self.past_label = -1     
+        self.past_label = -1    
+
+    def set_videowriter(self, subject, image, class_names):
+        if self.video_writer == None:
+            h, w, _ = image.shape
+            filename = os.path.join(self.video_destination_folder, subject + ".mp4")
+            fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
+            self.video_writer = cv2.VideoWriter(filename,
+                                                fourcc,
+                                                25.0,
+                                                (w, h))
+            
+    def close_videowriter(self):
+        if self.set_videowriter != None:
+            self.video_writer.release()
+        
+    def writeToVideo(self, image, subject, label, class_names):
+        self.set_videowriter(subject, image, class_names)        
+        
+        cv2.putText(image, class_names[label], (100, 100), cv2.FONT_HERSHEY_SIMPLEX, 3, (255, 0, 0), 2)
+        self.video_writer.write(image)

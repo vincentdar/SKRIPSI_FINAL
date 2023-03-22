@@ -32,7 +32,7 @@ class Report:
         if subject in list(self.df['Subject'].unique()):
             have_evaluation = True
 
-        f = open(os.path.join(self.destination_folder, subject + "_focal.csv"), "w")
+        f = open(os.path.join(self.destination_folder, subject + ".csv"), "w")
         f.write("Index" + "," + "Class Names" + "," + "Conf" + "," + "Number" + "," + "Label" + "," + "GT" + "\n")
         iterate = 0
         for index, sentence in enumerate(self.predictions):

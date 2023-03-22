@@ -175,7 +175,7 @@ def compile_model(model):
   return model
 
 def compile_model_focal_loss(model):
-  model.compile(loss=[categorical_focal_loss(alpha=[[.25, .25, .25, .25, .25, .25]], gamma=2)],
+  model.compile(loss=[categorical_focal_loss(alpha=[[1, 1, 1, 1, 1, 1]], gamma=2)],
                 optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
                 metrics=['accuracy'])
   
@@ -190,10 +190,12 @@ def read_dataframe(filename):
 
 
 if __name__ == "__main__": 
+  tf.keras.backend.clear_session()
+  tf.config.optimizer.set_jit(True) # Enable XLA.
   class_names = ["Unknown", "Showing Emotions", "Blank Face", "Reading",
                    "Head Tilt", "Occlusion"]                
-  train_features, train_labels = read_dataframe("training_pubspeak_multiclass_21032023_face_detection.csv")
-  test_features, test_labels = read_dataframe("testing_pubspeak_multiclass_21032023_face_detection.csv")
+  train_features, train_labels = read_dataframe("categorical/training_pubspeak_multiclass_21032023_face_detection.csv")
+  test_features, test_labels = read_dataframe("categorical/testing_pubspeak_multiclass_21032023_face_detection.csv")
 
   train_ds = tf.data.Dataset.from_generator(create_dataset,
                                           args=(tf.convert_to_tensor(train_features), tf.convert_to_tensor(train_labels)),
@@ -205,19 +207,9 @@ if __name__ == "__main__":
                                         output_types=(tf.float32, tf.int64),
                                         output_shapes=((12, 224, 224, 3), (6)))  
   
-  
-#   for videos, labels in train_ds.take(1):        
-#     plt.figure(figsize=(24, 16))
-#     for i in range(12):
-#         plt.subplot(3, 4, i + 1)
-#         plt.imshow(videos[i])
-#         index = tf.argmax(labels, axis=0)
-#         label = class_names[index]
-#         plt.title("Image " + str(i+1) + " Label " + str(label))
-#     plt.show()  
-#     break
 
-  checkpoint_path = "checkpoint/local_mobilenet_cnnlstm_unfreezelast20_newpubspeak15032023_multiclass_merged_10_epoch/cp.ckpt"
+
+  checkpoint_path = "checkpoint/local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_multiclass_merged_focal_loss_10_epoch/cp.ckpt"
   checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(checkpoint_path,
                                                           monitor='val_accuracy',
                                                           save_weights_only=True,
@@ -230,19 +222,19 @@ if __name__ == "__main__":
   
   # Mobilenet
   model = create_mobilenet()
-  model = compile_model(model)
-  # model = compile_model_focal_loss(model)
+  # model = compile_model(model)
+  model = compile_model_focal_loss(model)
 
   history = model.fit(train_ds,
                       validation_data=test_ds,
                       epochs=10,
-                      callbacks=[checkpoint_callback])
+                      callbacks=[checkpoint_callback])              
   
   # convert the history.history dict to a pandas DataFrame:     
   hist_df = pd.DataFrame(history.history) 
 
   # or save to csv: 
-  hist_csv_file = 'history/history_local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_multiclass_merged_10_epoch.csv'
+  hist_csv_file = 'history/history_local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_multiclass_merged_focal_loss_10_epoch.csv'
   with open(hist_csv_file, mode='w') as f:
       hist_df.to_csv(f)
 
