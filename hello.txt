@@ -1,0 +1,4 @@
+Hello WSL!
+
+Path: D:\CodeProject2\SKRIPSI_FINAL\hello.txt
+Accessed via WSL

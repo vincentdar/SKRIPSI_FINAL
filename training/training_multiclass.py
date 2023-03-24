@@ -40,6 +40,47 @@ def plot_video(ds, num_of_takes):
       plt.title("Image " + str(i) + " Label " + str(labels))
     plt.show() 
 
+def create_efficientnetb0():  
+  tf.config.run_functions_eagerly(True)
+  efficientnet = tf.keras.applications.efficientnet.EfficientNetB0(input_shape=(224, 224, 3),
+                                                                   include_top=False,
+                                                                   pooling="avg")
+  # mobilenet.trainable = False
+
+  # If you wanted to modify the mobilenet layer
+  # Freeze all layer except for the last 20
+  efficientnet.trainable = True
+  for layer in efficientnet.layers[:-20]:
+      layer.trainable = False
+
+  inputs = tf.keras.Input(shape=(12, 224, 224, 3))    
+  x = tf.keras.layers.TimeDistributed(efficientnet)(inputs)
+  x = tf.keras.layers.LSTM(32)(x)
+  outputs = tf.keras.layers.Dense(6, activation="softmax")
+
+  rnn = tf.keras.Model(inputs=inputs, outputs=outputs, name="efficientnetb0-lstm")
+
+  # inputs = tf.keras.Input(shape=(224, 224, 3))
+  # x = tf.keras.applications.efficientnet.preprocess_input(inputs)
+  # x = efficientnet(x)
+  # outputs = tf.keras.layers.GlobalAveragePooling2D()(x)
+  # cnn = tf.keras.Model(inputs=inputs, outputs=outputs, name="efficientnetb0")
+  # print(cnn.summary())
+
+  # # RNN Model
+  # rnn = tf.keras.models.Sequential()
+  # rnn.add(tf.keras.layers.TimeDistributed(cnn))
+  # rnn.add(tf.keras.layers.LSTM(32))
+
+  # # rnn.add(tf.keras.layers.Dense(10, activation="softmax")
+  # rnn.add(tf.keras.layers.Dense(6, activation="softmax"))
+
+  # rnn.build(input_shape=(None, 12, 224, 224, 3)) 
+  # print(rnn.summary())
+  
+  return rnn
+
+
 def create_mobilenet():  
   mobilenet = tf.keras.applications.MobileNet(input_shape=(224, 224, 3), include_top=False)
   # mobilenet.trainable = False
@@ -50,6 +91,8 @@ def create_mobilenet():
   for layer in mobilenet.layers[:-20]:
       layer.trainable = False
 
+      
+
   # CNN Model
   cnn = tf.keras.models.Sequential()  
   cnn.add(mobilenet)
@@ -57,6 +100,7 @@ def create_mobilenet():
 
   cnn.add(tf.keras.layers.GlobalAveragePooling2D())
   # cnn.add(tf.keras.layers.Dense(32))
+  print(cnn.summary())
 
   # RNN Model
   rnn = tf.keras.models.Sequential()
@@ -190,8 +234,8 @@ def read_dataframe(filename):
 
 
 if __name__ == "__main__": 
-  tf.keras.backend.clear_session()
-  tf.config.optimizer.set_jit(True) # Enable XLA.
+  # tf.keras.backend.clear_session()
+  # tf.config.optimizer.set_jit(True) # Enable XLA.
   class_names = ["Unknown", "Showing Emotions", "Blank Face", "Reading",
                    "Head Tilt", "Occlusion"]                
   train_features, train_labels = read_dataframe("categorical/training_pubspeak_multiclass_21032023_face_detection.csv")
@@ -209,7 +253,7 @@ if __name__ == "__main__":
   
 
 
-  checkpoint_path = "checkpoint/local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_multiclass_merged_focal_loss_10_epoch/cp.ckpt"
+  checkpoint_path = "checkpoint/local_efficientnet_cnnlstm_unfreezelast20_newpubspeak21032023_multiclass_merged_focal_loss_10_epoch/cp.ckpt"
   checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(checkpoint_path,
                                                           monitor='val_accuracy',
                                                           save_weights_only=True,
@@ -221,22 +265,23 @@ if __name__ == "__main__":
   test_ds = test_ds.prefetch(tf.data.AUTOTUNE).batch(4)
   
   # Mobilenet
-  model = create_mobilenet()
-  # model = compile_model(model)
-  model = compile_model_focal_loss(model)
+  # model = create_mobilenet()
+  model = create_efficientnetb0()
+  model = compile_model(model)
+  # model = compile_model_focal_loss(model)
 
-  history = model.fit(train_ds,
-                      validation_data=test_ds,
-                      epochs=10,
-                      callbacks=[checkpoint_callback])              
+  # history = model.fit(train_ds,
+  #                     validation_data=test_ds,
+  #                     epochs=10,
+  #                     callbacks=[checkpoint_callback])              
   
-  # convert the history.history dict to a pandas DataFrame:     
-  hist_df = pd.DataFrame(history.history) 
+  # # convert the history.history dict to a pandas DataFrame:     
+  # hist_df = pd.DataFrame(history.history) 
 
-  # or save to csv: 
-  hist_csv_file = 'history/history_local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_multiclass_merged_focal_loss_10_epoch.csv'
-  with open(hist_csv_file, mode='w') as f:
-      hist_df.to_csv(f)
+  # # or save to csv: 
+  # hist_csv_file = 'history/history_local_efficientnet_cnnlstm_unfreezelast20_newpubspeak21032023_multiclass_merged_focal_loss_10_epoch.csv'
+  # with open(hist_csv_file, mode='w') as f:
+  #     hist_df.to_csv(f)
 
 
 
