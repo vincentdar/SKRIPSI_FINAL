@@ -7,22 +7,47 @@ import cv2
 import math
 from keras import backend as K
 
-def parse_image(filename):  
+def parse_image(filename, augment_code):  
   image = tf.io.read_file(filename)
   image = tf.io.decode_image(image)
   image = tf.image.convert_image_dtype(image, tf.float32)
   image = tf.image.resize(image, [224, 224])  
+
+  if augment_code == 0:
+    pass
+  elif augment_code == 1:
+    # Flip 
+    image = tf.image.flip_left_right(image)
   return image
          
 
-def create_dataset(features, label):
+def create_dataset(features, label):    
   length = label.shape[0]    
   for i in range(0, length):
     feature = features[i]
     images = []
     for j in range(0, feature.shape[0]):
       filename = feature[j]
-      image = parse_image(filename)
+      image = parse_image(filename, 0)
+      images.append(image)      
+
+    video = tf.convert_to_tensor(images, dtype=tf.float32)    
+    yield video, tf.one_hot(label[i], depth=6)      
+
+    # idk why images variable automatically empties itself
+
+def create_dataset_augmented(features, label, augment):    
+  length = label.shape[0]    
+  for i in range(0, length):
+    feature = features[i]
+    
+    # Augmentation Code    
+    augment_code = augment[i]
+
+    images = []
+    for j in range(0, feature.shape[0]):
+      filename = feature[j]
+      image = parse_image(filename, augment_code)
       images.append(image)      
 
     video = tf.convert_to_tensor(images, dtype=tf.float32)    
@@ -45,36 +70,37 @@ def create_efficientnetb0():
   efficientnet = tf.keras.applications.efficientnet.EfficientNetB0(input_shape=(224, 224, 3),
                                                                    include_top=False,
                                                                    pooling="avg")
-  # mobilenet.trainable = False
+  efficientnet.trainable = False
 
-  # If you wanted to modify the mobilenet layer
-  # Freeze all layer except for the last 20
-  efficientnet.trainable = True
-  for layer in efficientnet.layers[:-20]:
-      layer.trainable = False
 
-  inputs = tf.keras.Input(shape=(12, 224, 224, 3))    
-  x = tf.keras.layers.TimeDistributed(efficientnet)(inputs)
-  x = tf.keras.layers.LSTM(32)(x)
-  outputs = tf.keras.layers.Dense(6, activation="softmax")
+  # net = tf.keras.applications.EfficientNetB0(include_top = False)
+  # net.trainable = False
 
-  rnn = tf.keras.Model(inputs=inputs, outputs=outputs, name="efficientnetb0-lstm")
+  # rnn = tf.keras.Sequential([
+  #     tf.keras.layers.Rescaling(scale=255),
+  #     tf.keras.layers.TimeDistributed(net),
+  #     tf.keras.layers.Dense(10),
+  #     tf.keras.layers.GlobalAveragePooling3D()
+  # ])
+  
+  # rnn.build(input_shape=(None, 12, 224, 224, 3))
+  # print(rnn.summary())
 
-  # inputs = tf.keras.Input(shape=(224, 224, 3))
-  # x = tf.keras.applications.efficientnet.preprocess_input(inputs)
-  # x = efficientnet(x)
+  inputs = tf.keras.Input(shape=(224, 224, 3))
+  x = tf.keras.applications.efficientnet.preprocess_input(inputs)
+  x = efficientnet(x)
   # outputs = tf.keras.layers.GlobalAveragePooling2D()(x)
-  # cnn = tf.keras.Model(inputs=inputs, outputs=outputs, name="efficientnetb0")
-  # print(cnn.summary())
+  cnn = tf.keras.Model(inputs=inputs, outputs=x, name="efficientnetb0")
+  print(cnn.summary())
 
-  # # RNN Model
-  # rnn = tf.keras.models.Sequential()
-  # rnn.add(tf.keras.layers.TimeDistributed(cnn))
-  # rnn.add(tf.keras.layers.LSTM(32))
+  # RNN Model
+  rnn_inputs = tf.keras.Input(shape=(12, 224, 224, 3))
+  rnn_x = tf.keras.layers.TimeDistributed(cnn)(rnn_inputs)
+  rnn_x = tf.keras.layers.LSTM(32)(rnn_x)
+  
+  rnn_outputs = tf.keras.layers.Dense(6, activation="softmax")(rnn_x)
 
-  # # rnn.add(tf.keras.layers.Dense(10, activation="softmax")
-  # rnn.add(tf.keras.layers.Dense(6, activation="softmax"))
-
+  rnn = tf.keras.model(inputs=[rnn_inputs], outputs=[rnn_outputs], name="cnnlstm")  
   # rnn.build(input_shape=(None, 12, 224, 224, 3)) 
   # print(rnn.summary())
   
@@ -212,6 +238,7 @@ def categorical_focal_loss(alpha, gamma=2.):
 
 
 def compile_model(model):
+  model.run_eagerly = True
   model.compile(loss='categorical_crossentropy',
                 optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
                 metrics=['accuracy'])
@@ -227,22 +254,33 @@ def compile_model_focal_loss(model):
 
 def read_dataframe(filename):
   df = pd.read_csv(filename)  
-  df = df.sample(frac=1, random_state=42)  
-  features = df.drop('Label', axis=1)
+  df = df.sample(frac=1, random_state=42)
+  # df = df.sample(frac=1)  
+  
+  try:
+    features = df.drop(['Label', 'Augmentation'], axis=1)
+    augments = df['Augmentation']
+  except:
+    features = df.drop('Label', axis=1)
+    augments = None
   labels = df['Label']
-  return features, labels
+  
+  
+  return features, labels, augments
 
 
-if __name__ == "__main__": 
+if __name__ == "__main__":   
   # tf.keras.backend.clear_session()
   # tf.config.optimizer.set_jit(True) # Enable XLA.
   class_names = ["Unknown", "Showing Emotions", "Blank Face", "Reading",
                    "Head Tilt", "Occlusion"]                
-  train_features, train_labels = read_dataframe("categorical/training_pubspeak_multiclass_21032023_face_detection.csv")
-  test_features, test_labels = read_dataframe("categorical/testing_pubspeak_multiclass_21032023_face_detection.csv")
+  train_features, train_labels, train_augments = read_dataframe("categorical/training_pubspeak_multiclass_21032023_face_detection_augmented.csv")
+  test_features, test_labels, _ = read_dataframe("categorical/testing_pubspeak_multiclass_21032023_face_detection.csv")
+  
+  print(tf.convert_to_tensor(train_augments))
 
-  train_ds = tf.data.Dataset.from_generator(create_dataset,
-                                          args=(tf.convert_to_tensor(train_features), tf.convert_to_tensor(train_labels)),
+  train_ds = tf.data.Dataset.from_generator(create_dataset_augmented,
+                                          args=(tf.convert_to_tensor(train_features), tf.convert_to_tensor(train_labels), tf.convert_to_tensor(train_augments)),
                                           output_types=(tf.float32, tf.int64),
                                           output_shapes=((12, 224, 224, 3), (6)))  
   
@@ -251,37 +289,48 @@ if __name__ == "__main__":
                                         output_types=(tf.float32, tf.int64),
                                         output_shapes=((12, 224, 224, 3), (6)))  
   
+  # train_ds = train_ds.filter(lambda x, y: tf.argmax(y) == 4)
+  # plot_video(train_ds, 8)  
+  # plt.figure()
+  # plt.subplot(1, 2, 1)
+  # img = parse_image("C:/Users/vince/Pictures/349249.jpg", 0)
+  # plt.imshow(img)
+  # flip_img = parse_image("C:/Users/vince/Pictures/349249.jpg", 1)
+  # plt.subplot(1, 2, 2)
+  # plt.imshow(flip_img)
+  # plt.show()
 
-
-  checkpoint_path = "checkpoint/local_efficientnet_cnnlstm_unfreezelast20_newpubspeak21032023_multiclass_merged_focal_loss_10_epoch/cp.ckpt"
+  checkpoint_path = "checkpoint/local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_multiclass_augmented_10_epoch/cp.ckpt"
   checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(checkpoint_path,
                                                           monitor='val_accuracy',
                                                           save_weights_only=True,
                                                           save_best_only=True,
                                                           verbose=1)
+  
+
     
 
   train_ds = train_ds.prefetch(tf.data.AUTOTUNE).batch(4)
   test_ds = test_ds.prefetch(tf.data.AUTOTUNE).batch(4)
   
   # Mobilenet
-  # model = create_mobilenet()
-  model = create_efficientnetb0()
-  model = compile_model(model)
-  # model = compile_model_focal_loss(model)
+  model = create_mobilenet()
+  # model = create_efficientnetb0()  
+  # model = compile_model(model)  
+  model = compile_model_focal_loss(model)
 
-  # history = model.fit(train_ds,
-  #                     validation_data=test_ds,
-  #                     epochs=10,
-  #                     callbacks=[checkpoint_callback])              
+  history = model.fit(train_ds,
+                      validation_data=test_ds,
+                      epochs=10,
+                      callbacks=[checkpoint_callback])              
   
-  # # convert the history.history dict to a pandas DataFrame:     
-  # hist_df = pd.DataFrame(history.history) 
+  # convert the history.history dict to a pandas DataFrame:     
+  hist_df = pd.DataFrame(history.history) 
 
-  # # or save to csv: 
-  # hist_csv_file = 'history/history_local_efficientnet_cnnlstm_unfreezelast20_newpubspeak21032023_multiclass_merged_focal_loss_10_epoch.csv'
-  # with open(hist_csv_file, mode='w') as f:
-  #     hist_df.to_csv(f)
+  # or save to csv: 
+  hist_csv_file = 'history/history_local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_multiclass_augmented_10_epoch.csv'
+  with open(hist_csv_file, mode='w') as f:
+      hist_df.to_csv(f)
 
 
 

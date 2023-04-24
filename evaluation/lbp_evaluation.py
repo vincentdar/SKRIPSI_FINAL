@@ -57,39 +57,55 @@ def chiSquareDistance(x, y):
     return distance
 
 
-file = open('lbp_result.csv', 'w')
-data = "Subject,Folder,Image,CDF,MaxCDF,MeanCDF,Onset,Offset\n"
+file = open('lbp_pubspeak21032022_ver2.csv', 'w')
+data = "Subject,CDF,MaxCDF,MeanCDF,Total\n"
+file.write(data)
 if __name__ == "__main__":
-    label = pd.read_csv("D:\CASME\CASMEII\CASMEII_preprocess.csv")
-    for index, row in label.iterrows():
-        subject = row['Subject']
-        folder = row['Folder']
-        onset = row['Onset']
-        offset = row['Offset']
+    # label = pd.read_csv("D:\CASME\CASMEII\CASMEII_preprocess.csv")
+    # label= pd.read_csv()
+    # for index, row in label.iterrows():
+        # subject = row['Subject']
+        # folder = row['Folder']
+        # onset = row['Onset']
+        # offset = row['Offset']
+    for i in range(0, 2):
+        if i == 0:
+            subject = "S4"
+        else:
+            subject = "S50"        
 
-        stride = (65 - 1) // 2
 
-        data_path = "D:\CASME\CASMEII\CASME2-RAW-Localize\CASME2-RAW"
-        path = os.path.join(data_path, subject, folder)
+        # stride = (65 - 1) // 2 # 200 FPS
+        stride = (9 - 1) // 2 # 25 FPS
+
+        # data_path = "D:\CASME\CASMEII\CASME2-RAW-Localize\CASME2-RAW"
+        # path = os.path.join(data_path, subject, folder)
+        data_path = "D:\Dataset Skripsi Batch Final Image"
+        path = os.path.join(data_path, subject)
         print("Path:", path)
         
         file_number = sorted([int(f[3:-4]) for f in os.listdir(path)])
+        total_images = len(file_number)
+
+        print("Total Frames", total_images)
+        # data = subject + "," + folder + "," + str(offset-onset) + "," + str(total_images-(offset-onset))+"," + str(total_images) + "\n"        
+        # file.write(data)   
 
         filenames = []          
         images = []
-        iteration = 1
+        iteration = 0
 
         # Get all file
-        for number in file_number:
-            img_filename = "img" + str(number) + ".jpg"
+        for number in file_number:            
+            img_filename = "img" + str(number).zfill(5) + ".jpg"
             img_path = os.path.join(path, img_filename)
             if os.path.isfile(img_path):
-                if number == iteration:
+                if number == iteration:                    
                     img = cv2.imread(img_path)                
                     images.append(img)
-                    filenames.append(img_filename)
+                    filenames.append(number)
                     iteration += stride
-        
+                
         # Calculate the Feature Difference
         difference_vector_list = []
         for index in range(1, len(images) - 1):    
@@ -125,8 +141,8 @@ if __name__ == "__main__":
         threshold = mean_contrasted_vector + tau * (max_contrasted_vector - mean_contrasted_vector)   
 
         for index in range(0, len(constrasted_filenames_list)):            
-            data = subject + "," + folder + "," + constrasted_filenames_list[index] + "," + str(contrasted_vector_list[index]) + "," + str(max_contrasted_vector) + "," + str(mean_contrasted_vector) + "," + str(onset) + "," + str(offset) + "\n"
+            data = subject + "," + str(constrasted_filenames_list[index]) + "," + str(contrasted_vector_list[index]) + "," + str(max_contrasted_vector) + "," + str(mean_contrasted_vector) + "," + str(total_images) + "\n"
             print(data)
-            file.write(data)
+            file.write(data)        
 
 file.close()          

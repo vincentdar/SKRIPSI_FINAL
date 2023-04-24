@@ -4,16 +4,17 @@ import numpy as np
 from keras import backend as K
 
 class CNNLSTM:
-    def __init__(self, parent=None):
-        print("CNNLSTM Module Loaded")
+    def __init__(self, parent=None):        
         print("Number of GPU Available:", len(tf.config.list_physical_devices('GPU')))
         self.model = None
+        self.is_categorical = False
 
     def test_cudnn(self):
-        x = tf.zeros((3, 3), dtype=tf.float32)
-        y = tf.ones((3, 3), dtype=tf.float32)
-        z = tf.matmul(x, y)
-        print(z)
+        with tf.device('/GPU:0'):
+            x = tf.zeros((3, 3), dtype=tf.float32)
+            y = tf.ones((3, 3), dtype=tf.float32)
+            z = tf.matmul(x, y)
+            print(z)
 
     
     def mobilenet_binary(self, weights_path=None):
@@ -72,6 +73,7 @@ class CNNLSTM:
         self.model = rnn          
         # self.model = self.compile_model_categorical(self.model)
         self.model = self.compile_model_categorical_focal_loss(self.model)
+        self.is_categorical = True
 
     def categorical_focal_loss(self, alpha, gamma=2.):
         """
@@ -146,7 +148,7 @@ class CNNLSTM:
     
     def process_categorical(self, data):
         pred = np.squeeze(self.model.predict(data, verbose=0))
-        conf = np.max(pred, axis=0)
+        conf = pred
         label = np.argmax(pred, axis=0)
         return conf, label
 

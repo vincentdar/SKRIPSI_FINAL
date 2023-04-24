@@ -1,9 +1,12 @@
 import os
 import cv2
 import numpy as np
+import pandas as pd
 
 class Writer:
-    def __init__(self):
+    def __init__(self, report):
+        # Reporting
+        self.report = report
         # Image
         self.destination_folder = "results" 
         self.categorical_destination_folder = "results_categorical" 
@@ -14,8 +17,10 @@ class Writer:
         # Video
         self.video_writer = None   
         self.video_destination_folder = "results_video" 
-        
-             
+
+
+        self.width = None
+        self.height = None                
 
     def createDirectory(self, path):
         try:
@@ -58,13 +63,29 @@ class Writer:
                                                 fourcc,
                                                 25.0,
                                                 (w, h))
+            self.width = w
+            self.height = h
             
     def close_videowriter(self):
-        if self.set_videowriter != None:
+        if self.video_writer != None:
             self.video_writer.release()
         
-    def writeToVideo(self, image, subject, label, class_names):
-        self.set_videowriter(subject, image, class_names)        
-        
-        cv2.putText(image, class_names[label], (100, 100), cv2.FONT_HERSHEY_SIMPLEX, 3, (255, 0, 0), 2)
+    def writeToVideo(self, image, subject, label, number, class_names):
+        self.set_videowriter(subject, image, class_names)    
+        if len(class_names) > 2:
+            gt_label = self.report.getGTLabel(subject, number)
+        else:
+            gt_label = self.report.getGTLabelBinary(subject, number)   
+            
+        # Predicted
+        cv2.putText(image, "Pred: " + class_names[label], (int(0.01 * self.width), int(0.05 * self.height)),
+                     cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 0, 0), 2)     
+        # GT
+        if gt_label == -1:
+            cv2.putText(image, "GT: " + class_names[gt_label], (int(0.01 * self.width), int(0.12 * self.height)),
+                        cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 0, 0), 2)    
+        else:
+            cv2.putText(image, "GT: " + "None", (int(0.01 * self.width), int(0.12 * self.height)),
+                    cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 0, 0), 2)     
         self.video_writer.write(image)
+

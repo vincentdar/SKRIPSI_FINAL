@@ -12,14 +12,14 @@ from typing import List, Mapping, Optional, Tuple, Union
 
 
 file_ls = [
-    "D:\Dataset Skripsi Batch Final\\25 FPS\S1.mp4",
+    # "D:\Dataset Skripsi Batch Final\\25 FPS\S1.mp4",
     # "D:\Dataset Skripsi Batch Final\\25 FPS\S2.mp4",
     # "D:\Dataset Skripsi Batch Final\\25 FPS\S3.mp4",
-    # "D:\Dataset Skripsi Batch Final\\25 FPS\S4.mp4",   
+    "D:\Dataset Skripsi Batch Final\\25 FPS\S4.mp4",   
 
     # "D:\Dataset Skripsi Batch Final\\25 FPS\S10.mp4",
     # "D:\Dataset Skripsi Batch Final\\25 FPS\S22.mov",
-    # "D:\Dataset Skripsi Batch Final\\25 FPS\S50.mov",
+    "D:\Dataset Skripsi Batch Final\\25 FPS\S50.mov",
     # "D:\Dataset Skripsi Batch Final\\25 FPS\S51.mov",  
 
     # "D:\Dataset Skripsi Batch Final\\25 FPS\S52.mov",
@@ -94,9 +94,9 @@ def read_video(filename):
                 # cv2.imshow('Face Detection Red', red)                 
 
                 # write frame to folder 
-                # written_filename = "img" + str(frame_count).zfill(5) + ".jpg"
-                # final_written_filename = os.path.join(target_full_path, written_filename)            
-                # cv2.imwrite(final_written_filename, faceROI)     # save frame as JPEG file
+                written_filename = "img" + str(frame_count).zfill(5) + ".jpg"
+                final_written_filename = os.path.join(target_full_path, written_filename)            
+                cv2.imwrite(final_written_filename, faceROI)     # save frame as JPEG file
 
             except Exception as e:      
                 print("Exception Occured")          
@@ -104,10 +104,10 @@ def read_video(filename):
                 cv2.imshow('Face Detection', blank_frame)                
                   
                 # write frame to folder 
-                # written_filename = "img" + str(frame_count).zfill(5) + ".jpg"
-                # final_written_filename = os.path.join(target_full_path, written_filename)            
-                # cv2.imwrite(final_written_filename, blank_frame)     # save frame as JPEG file  
-                # failed_file_tracker.write(written_filename + "\n")            
+                written_filename = "img" + str(frame_count).zfill(5) + ".jpg"
+                final_written_filename = os.path.join(target_full_path, written_filename)            
+                cv2.imwrite(final_written_filename, blank_frame)     # save frame as JPEG file  
+                failed_file_tracker.write(written_filename + "\n")            
             frame_count += 1
             
             # Press Q on keyboard to exit

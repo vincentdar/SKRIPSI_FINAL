@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import math
 import os
 import dlib
+import time
+from functools import wraps
 from typing import List, Mapping, Optional, Tuple, Union
 
 
@@ -18,7 +20,7 @@ class Localize:
 
         # Tracking / Temporal Smoothing Algorithm
         self.tracked_point = []
-        self.blank_frame = np.zeros((224, 224, 3), dtype=np.uint8)
+        self.blank_frame = np.zeros((224, 224, 3))
         self.corr_tracker = dlib.correlation_tracker()
         self.corr_reset_iterator = 0
 
@@ -31,10 +33,16 @@ class Localize:
         self.bb_length = 0        
         self.init_length_bb = False
 
-        self.mp_drawing = mp.solutions.drawing_utils
-        self.mp_drawing_styles = mp.solutions.drawing_styles
-        self.drawing_spec = self.mp_drawing.DrawingSpec(thickness=1, circle_radius=1)
-
+    def timeit(func):
+        @wraps(func)
+        def timeit_wrapper(*args, **kwargs):
+            start_time = time.perf_counter()
+            result = func(*args, **kwargs)
+            end_time = time.perf_counter()
+            total_time = end_time - start_time
+            print(f'Function {func.__name__} Took {total_time:.4f} seconds')
+            return result
+        return timeit_wrapper
 
 
     def plot_centroid_length(self, filename):
@@ -100,7 +108,7 @@ class Localize:
                     xleft, ytop=rect_start_point
                     xright, ybot=rect_end_point
                     faceROI = image[ytop:ybot,xleft:xright]
-                    faceROI = cv2.resize(faceROI, (224, 224), interpolation=cv2.INTER_AREA)
+                    faceROI = cv2.resize(faceROI, (224, 224), interpolation=cv2.INTER_CUBIC)
                     break
         if return_image:   
             return faceROI
@@ -145,6 +153,7 @@ class Localize:
             cv2.rectangle(frame, (avg_bounding_box[0], avg_bounding_box[1]),
              (avg_bounding_box[2], avg_bounding_box[3]), (0, 255, 0), 2)
      
+    # @timeit
     def mp_localize_crop(self, frame):
         tracker = self.localizeFace_mediapipe(frame, False)
 
@@ -230,7 +239,7 @@ class Localize:
             endY = int(pos.bottom())
 
             # Showing Bounding Box
-            cv2.rectangle(frame, (startX, startY), (endX, endY), (0, 255, 0), 2)
+            cv2.rectangle(frame, (startX, startY), (endX, endY), (255, 0, 0), 2)
             print("Tracking..")
             self.corr_reset_iterator += 1
             if self.corr_reset_iterator > 5:
@@ -244,7 +253,7 @@ class Localize:
                 self.corr_tracker.start_track(frame, rect)
 
                 # Showing Bounding Box
-                cv2.rectangle(frame, (startX, startY), (endX, endY), (0, 255, 0), 2)
+                cv2.rectangle(frame, (startX, startY), (endX, endY), (255, 0, 0), 2)
                 print("Restart Tracking")
         
         return frame
@@ -297,40 +306,6 @@ class Localize:
                     # END CODE
                     return frame
                 
-    def mp_face_mesh_draw(self, frame):        
-        with self.mp_face_mesh.FaceMesh(max_num_faces=1,
-                                        refine_landmarks=True,
-                                        min_detection_confidence=0.8,
-                                        min_tracking_confidence=0.8) as face_mesh:
-            results = face_mesh.process(frame)
-            # To improve performance, optionally mark the image as not writeable to
-            # pass by reference.
-            frame.flags.writeable = True
-            if results.multi_face_landmarks:
-                for face_landmarks in results.multi_face_landmarks: 
-                    self.mp_drawing.draw_landmarks(
-                        image=frame,
-                        landmark_list=face_landmarks,
-                        connections=face_mesh.FACEMESH_TESSELATION,
-                        landmark_drawing_spec=None,
-                        connection_drawing_spec=self.mp_drawing_styles
-                        .get_default_face_mesh_tesselation_style())
-                    self.mp_drawing.draw_landmarks(
-                        image=frame,
-                        landmark_list=face_landmarks,
-                        connections=face_mesh.FACEMESH_CONTOURS,
-                        landmark_drawing_spec=None,
-                        connection_drawing_spec=self.mp_drawing_styles
-                        .get_default_face_mesh_contours_style())
-                    self.mp_drawing.draw_landmarks(
-                        image=frame,
-                        landmark_list=face_landmarks,
-                        connections=face_mesh.FACEMESH_IRISES,
-                        landmark_drawing_spec=None,
-                        connection_drawing_spec=self.mp_drawing_styles
-                        .get_default_face_mesh_iris_connections_style())
-            return frame
-                
     # Tracking the bounding box via median to "smooth out"
     def median_tracked_point(self, tracked_point):        
         length = len(tracked_point)        
@@ -360,6 +335,7 @@ class Localize:
 
         return xleft[median_index], ytop[median_index], xright[median_index], ybot[median_index]
                 
+    # @timeit
     def mp_face_mesh_crop(self, frame):
         with self.mp_face_mesh.FaceMesh(max_num_faces=1,
                                         refine_landmarks=True,
@@ -477,7 +453,7 @@ class Localize:
                     # END CODE
             return self.blank_frame
         
-    def mp_face_mesh_crop_preprocessing(self, frame, padding=True):
+    def mp_face_mesh_crop_preprocessing(self, frame):
         with self.mp_face_mesh.FaceMesh(max_num_faces=1,
                                         refine_landmarks=True,
                                         min_detection_confidence=0.5,
@@ -505,13 +481,8 @@ class Localize:
                         if cy>cy_max:
                             cy_max=cy
 
-                    if padding:
-                        padding_x = int((cx_max - cx_min) * 0.05)
-                        padding_y = int((cy_max - cy_min) * 0.05)  
-                    else:
-                        padding_x = 0
-                        padding_y = 0 
-                     
+                    padding_x = int((cx_max - cx_min) * 0.05)
+                    padding_y = int((cy_max - cy_min) * 0.05)   
 
                     xleft = cx_min - padding_x
                     ytop = cy_min - padding_y
@@ -810,26 +781,6 @@ class Localize:
                     return (True, xleft, ytop, xright, ybot)
                     # END CODE
             return (False, xleft, ytop, xright, ybot)
-        
-
-# if __name__ == "__main__":
-#     localize = Localize()
-
-#     img = cv2.imread("D:\CASME\CASMEII\CASME2-RAW-NoVideo\CASME2-RAW\sub01\EP02_01f\img1.jpg")
-
-#     detected, xleft, ytop, xright, ybot = localize.mp_face_mesh_crop_preprocessing(img)
-
-    
-#     cropped = img[ytop:ybot, xleft:xright]
-
-#     cv2.imshow("Padding 10", cropped)
-
-#     detected, xleft, ytop, xright, ybot = localize.mp_face_mesh_crop_preprocessing(img, padding=False)
-
-#     cropped = img[ytop:ybot, xleft:xright]
-#     cv2.imshow("No Padding", cropped)
-#     cv2.waitKey(0)
-
             
 
             

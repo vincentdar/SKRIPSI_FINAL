@@ -46,7 +46,28 @@ file_ls = [
     # "D:\Dataset Skripsi Batch Final\\25 FPS\S32.mov",
     # "D:\Dataset Skripsi Batch Final\\25 FPS\S33.mov", 
 
-    "D:\Dataset Skripsi Batch Final\\25 FPS\S5.mp4", 
+    # "D:\Dataset Skripsi Batch Final\\25 FPS\S5.mp4", 
+
+    # "D:\Dataset Skripsi Batch Final\\25 FPS\S6.mp4",
+    # "D:\Dataset Skripsi Batch Final\\25 FPS\S7.mp4",
+    # "D:\Dataset Skripsi Batch Final\\25 FPS\S8.mp4",
+    # "D:\Dataset Skripsi Batch Final\\25 FPS\S9.mp4", 
+
+    # "D:\Dataset Skripsi Batch Final\\25 FPS\S34.mov",
+    # "D:\Dataset Skripsi Batch Final\\25 FPS\S35.mov",
+    # "D:\Dataset Skripsi Batch Final\\25 FPS\S36.mov",
+    # "D:\Dataset Skripsi Batch Final\\25 FPS\S37.mov", 
+
+    # Warna Kulit Gelap
+    "D:\Dataset Skripsi Batch Final\\25 FPS\S17.mp4",
+    # "D:\Dataset Skripsi Batch Final\\25 FPS\S171.mov",
+    # "D:\Dataset Skripsi Batch Final\\25 FPS\S87.mov",
+    # "D:\Dataset Skripsi Batch Final\\25 FPS\S126.mov", 
+
+    # "D:\Dataset Skripsi Batch Final\\25 FPS\S119.mov",
+    # "D:\Dataset Skripsi Batch Final\\25 FPS\S76.mov",
+    # "D:\Dataset Skripsi Batch Final\\25 FPS\S168.mov",
+    # "D:\Dataset Skripsi Batch Final\\25 FPS\S26.mov", 
 
     
 

@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import math
 import os
 import dlib
+import time
+from functools import wraps
 from typing import List, Mapping, Optional, Tuple, Union
 
 
@@ -31,6 +33,16 @@ class Localize:
         self.bb_length = 0        
         self.init_length_bb = False
 
+    def timeit(func):
+        @wraps(func)
+        def timeit_wrapper(*args, **kwargs):
+            start_time = time.perf_counter()
+            result = func(*args, **kwargs)
+            end_time = time.perf_counter()
+            total_time = end_time - start_time
+            print(f'Function {func.__name__}{args} {kwargs} Took {total_time:.4f} seconds')
+            return result
+        return timeit_wrapper
 
 
     def plot_centroid_length(self, filename):
@@ -226,7 +238,7 @@ class Localize:
             endY = int(pos.bottom())
 
             # Showing Bounding Box
-            cv2.rectangle(frame, (startX, startY), (endX, endY), (0, 255, 0), 2)
+            cv2.rectangle(frame, (startX, startY), (endX, endY), (255, 0, 0), 2)
             print("Tracking..")
             self.corr_reset_iterator += 1
             if self.corr_reset_iterator > 5:
@@ -240,7 +252,7 @@ class Localize:
                 self.corr_tracker.start_track(frame, rect)
 
                 # Showing Bounding Box
-                cv2.rectangle(frame, (startX, startY), (endX, endY), (0, 255, 0), 2)
+                cv2.rectangle(frame, (startX, startY), (endX, endY), (255, 0, 0), 2)
                 print("Restart Tracking")
         
         return frame
@@ -322,6 +334,7 @@ class Localize:
 
         return xleft[median_index], ytop[median_index], xright[median_index], ybot[median_index]
                 
+    @timeit
     def mp_face_mesh_crop(self, frame):
         with self.mp_face_mesh.FaceMesh(max_num_faces=1,
                                         refine_landmarks=True,
