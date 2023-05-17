@@ -109,13 +109,13 @@ def create_efficientnetb0():
 
 def create_mobilenet():  
   mobilenet = tf.keras.applications.MobileNet(input_shape=(224, 224, 3), include_top=False)
-  # mobilenet.trainable = False
+  mobilenet.trainable = False
 
   # If you wanted to modify the mobilenet layer
   # Freeze all layer except for the last 20
-  mobilenet.trainable = True
-  for layer in mobilenet.layers[:-20]:
-      layer.trainable = False
+  # mobilenet.trainable = True
+  # for layer in mobilenet.layers[:-20]:
+  #     layer.trainable = False
 
       
 
@@ -246,7 +246,7 @@ def compile_model(model):
   return model
 
 def compile_model_focal_loss(model):
-  model.compile(loss=[categorical_focal_loss(alpha=[[1, 1, 1, 1, 1, 1]], gamma=2)],
+  model.compile(loss=[categorical_focal_loss(alpha=[[0.25, 0.25, 0.25, 0.25, 0.25, 0.25]], gamma=2)],
                 optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
                 metrics=['accuracy'])
   
@@ -274,15 +274,20 @@ if __name__ == "__main__":
   # tf.config.optimizer.set_jit(True) # Enable XLA.
   class_names = ["Unknown", "Showing Emotions", "Blank Face", "Reading",
                    "Head Tilt", "Occlusion"]                
-  train_features, train_labels, train_augments = read_dataframe("categorical/training_pubspeak_multiclass_21032023_face_detection_augmented.csv")
-  test_features, test_labels, _ = read_dataframe("categorical/testing_pubspeak_multiclass_21032023_face_detection.csv")
+  train_features, train_labels, train_augments = read_dataframe("categorical/training_pubspeak_multiclass_25042023_face_detection.csv")
+  test_features, test_labels, _ = read_dataframe("categorical/testing_pubspeak_multiclass_25042023_face_detection.csv")
   
-  print(tf.convert_to_tensor(train_augments))
+  # print(tf.convert_to_tensor(train_augments))
 
-  train_ds = tf.data.Dataset.from_generator(create_dataset_augmented,
-                                          args=(tf.convert_to_tensor(train_features), tf.convert_to_tensor(train_labels), tf.convert_to_tensor(train_augments)),
+  # train_ds = tf.data.Dataset.from_generator(create_dataset_augmented,
+  #                                         args=(tf.convert_to_tensor(train_features), tf.convert_to_tensor(train_labels), tf.convert_to_tensor(train_augments)),
+  #                                         output_types=(tf.float32, tf.int64),
+  #                                         output_shapes=((12, 224, 224, 3), (6)))  
+  
+  train_ds = tf.data.Dataset.from_generator(create_dataset,
+                                          args=(tf.convert_to_tensor(train_features), tf.convert_to_tensor(train_labels)),
                                           output_types=(tf.float32, tf.int64),
-                                          output_shapes=((12, 224, 224, 3), (6)))  
+                                          output_shapes=((12, 224, 224, 3), (6))) 
   
   test_ds = tf.data.Dataset.from_generator(create_dataset,
                                         args=(tf.convert_to_tensor(test_features), tf.convert_to_tensor(test_labels)),
@@ -300,7 +305,7 @@ if __name__ == "__main__":
   # plt.imshow(flip_img)
   # plt.show()
 
-  checkpoint_path = "checkpoint/local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_multiclass_augmented_10_epoch/cp.ckpt"
+  checkpoint_path = "checkpoint/local_mobilenet_cnnlstm_newpubspeak25042023_multiclass_focal_loss_10_epoch/cp.ckpt"
   checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(checkpoint_path,
                                                           monitor='val_accuracy',
                                                           save_weights_only=True,
@@ -328,7 +333,7 @@ if __name__ == "__main__":
   hist_df = pd.DataFrame(history.history) 
 
   # or save to csv: 
-  hist_csv_file = 'history/history_local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_multiclass_augmented_10_epoch.csv'
+  hist_csv_file = 'history/history_local_mobilenet_cnnlstm_newpubspeak25042023_multiclass_focal_loss_10_epoch.csv'
   with open(hist_csv_file, mode='w') as f:
       hist_df.to_csv(f)
 

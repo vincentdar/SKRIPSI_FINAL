@@ -27,6 +27,10 @@ class HeadPoseEstimation:
         h, w, c = frame.shape
         results = self.face_mesh.process(frame)
         hpe_success = False
+
+        x = 0
+        y = 0
+        z = 0
         
         if results.multi_face_landmarks:
             for face_landmarks in results.multi_face_landmarks:
@@ -64,15 +68,21 @@ class HeadPoseEstimation:
                 rmat, jac = cv2.Rodrigues(rotationVector)
                 angles, mtxR, mtxQ, Qx, Qy, Qz = cv2.RQDecomp3x3(rmat)
 
-                x = np.arctan2(Qx[2][1], Qx[2][2])
-                y = np.arctan2(-Qy[2][0], np.sqrt((Qy[2][1] * Qy[2][1] ) + (Qy[2][2] * Qy[2][2])))
-                z = np.arctan2(Qz[0][0], Qz[1][0])
+                # x = np.arctan2(Qx[2][1], Qx[2][2])
+                # y = np.arctan2(-Qy[2][0], np.sqrt((Qy[2][1] * Qy[2][1] ) + (Qy[2][2] * Qy[2][2])))
+                # z = np.arctan2(Qz[0][0], Qz[1][0])
+
+                x = angles[0]
+                y = angles[1]
+                z = angles[2]
 
                 # print("Angles[1]", angles[1])
                 if angles[1] < -45:
                     GAZE = "Reject"
+                    hpe_success = False
                 elif angles[1] > 45:
                     GAZE = "Reject"
+                    hpe_success = False
                 else:
                     GAZE = "Accept"
                     hpe_success = True
@@ -83,9 +93,9 @@ class HeadPoseEstimation:
             cv2.putText(frame, "z:" + str(np.round(angles[2], 2)), (0, 200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
         
         if hpe_success:            
-            return True, frame
+            return True, x, y, z, frame
         else:
-            return False, frame
+            return False, x, y, z, frame
         
 
     def drawCircle(self, img, shapes):

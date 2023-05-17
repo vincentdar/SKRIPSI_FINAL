@@ -61,6 +61,7 @@ class CNNLSTM:
         rnn.add(tf.keras.layers.TimeDistributed(cnn))
         rnn.add(tf.keras.layers.LSTM(32))
         rnn.add(tf.keras.layers.Dense(6, activation="softmax"))
+        # rnn.add(tf.keras.layers.Dense(10, activation="softmax"))
 
 
         rnn.build(input_shape=(None, 12, 224, 224, 3)) 

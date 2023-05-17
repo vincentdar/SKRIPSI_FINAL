@@ -5,7 +5,7 @@ from PyQt5.QtCore import QDir, Qt, QUrl, pyqtSignal, pyqtSlot, QThread
 from PyQt5.QtMultimedia import QMediaContent, QMediaPlayer
 from PyQt5.QtMultimediaWidgets import QVideoWidget
 from PyQt5.QtWidgets import (QApplication, QFileDialog, QHBoxLayout, QLabel,
-        QPushButton, QSizePolicy, QSlider, QStyle, QVBoxLayout, QWidget)
+        QPushButton, QSizePolicy, QSlider, QStyle, QVBoxLayout, QWidget, QProgressBar)
 from PyQt5.QtWidgets import QMainWindow,QWidget, QPushButton, QAction, QTextEdit
 from PyQt5.QtGui import QIcon, QPixmap, QColor, QImage, QTextCursor
 from core.localize import Localize
@@ -21,11 +21,13 @@ import cv2
 import numpy as np
 import time
 import os
+from functools import wraps
 
 
 class VideoThread(QThread):
     change_pixmap_signal = pyqtSignal(np.ndarray)    
     append_output_log = pyqtSignal(str)
+    update_progress_bar = pyqtSignal(int)
 
     def __init__(self):
         QThread.__init__(self)
@@ -37,12 +39,25 @@ class VideoThread(QThread):
 
         # Initialize Spotting Algorithm
         self.prediction_model = CNNLSTM()     
-        self.prediction_model.test_cudnn()          
+        # self.prediction_model.test_cudnn()          
         # self.prediction_model.mobilenet_binary("core\weights/transfer_mobilenet_pubspeak_cnnlstm_tfrecord/cp.ckpt") #Benedict Hebert
-        self.prediction_model.mobilenet_binary("training\checkpoint\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_10_epoch/cp.ckpt")
+        # self.prediction_model.mobilenet_binary("core\weights/transfer_mobilenet_unfreezelast20_pubspeak_cnnlstm_tfrecord_pyramid_1_loso_S1/cp.ckpt") #Model 9
+        # self.prediction_model.mobilenet_binary("core\weights/transfer_mobilenet_unfreezelast20_pubspeak_cnnlstm_tfrecord_pyramid_1_loso_S2/cp.ckpt") #Model 10
+        # self.prediction_model.mobilenet_binary("core\weights/transfer_mobilenet_unfreezelast20_pubspeak_cnnlstm_tfrecord_pyramid_1_loso_S3/cp.ckpt") #Model 11
+        
+        # self.prediction_model.mobilenet_binary("training\checkpoint\local_mobilenet_cnnlstm_newpubspeak21032023_10_epoch/cp.ckpt")
+        # self.prediction_model.mobilenet_binary("training\checkpoint\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_10_epoch/cp.ckpt")
         # self.prediction_model.mobilenet_binary("training\checkpoint\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_augmented_10_epoch/cp.ckpt")
-        # self.prediction_model.mobilenet_categorical("training\checkpoint\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_multiclass_merged_10_epoch/cp.ckpt")        
+        self.prediction_model.mobilenet_binary("training\checkpoint\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak25042023_10_epoch/cp.ckpt")
+
+        # self.prediction_model.mobilenet_binary("training\checkpoint\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_augmented_10_epoch/cp.ckpt")
+        # self.prediction_model.mobilenet_categorical("training\checkpoint\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak15032023_multiclass_10_epoch/cp.ckpt") #Model 22
+        
+        # self.prediction_model.mobilenet_categorical("training\checkpoint\local_mobilenet_cnnlstm_newpubspeak21032023_multiclass_merged_10_epoch/cp.ckpt")
+        # self.prediction_model.mobilenet_categorical("training\checkpoint\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_multiclass_merged_10_epoch/cp.ckpt") 
+        # self.prediction_model.mobilenet_categorical("training\checkpoint\local_mobilenet_cnnlstm_newpubspeak21032023_multiclass_focal_loss_merged_10_epoch/cp.ckpt")        
         # self.prediction_model.mobilenet_categorical("training\checkpoint\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_multiclass_merged_augmented_10_epoch/cp.ckpt")                                   
+        # self.prediction_model.mobilenet_categorical("training\checkpoint\local_mobilenet_cnnlstm_newpubspeak25042023_multiclass_focal_loss_10_epoch/cp.ckpt")                                   
         # Report
         self.report = Report(self.prediction_model.is_categorical)
         self.report_folder = "reports"
@@ -53,9 +68,12 @@ class VideoThread(QThread):
 
         # HPE
         self.headPoseEstimation = HeadPoseEstimation()
+        self.use_hpe = False
 
         # Class Names
         self.categorical_class_names = ["Unknown", "Showing Emotions", "Blank Face", "Reading", "Head Tilt", "Occlusion"]
+        # self.categorical_class_names = ["Unknown", "Eye Contact", "Blank Face", "Showing Emotions", "Reading",
+        #            "Sudden Eye Change", "Smiling", "Not Looking", "Head Tilt", "Occlusion"]
         self.binary_class_names = ["Negative", "Positive"]
         
         # Control the thread
@@ -97,10 +115,23 @@ class VideoThread(QThread):
 
     def run(self):
         while self.threadRunning: 
-            if self.startProcess:                                
-                self.process_video() 
+            if self.startProcess:         
+                self.process_video()                       
+                # self.process_video_pyramid()                 
                   
 
+    def timeit(func):
+        @wraps(func)
+        def timeit_wrapper(*args, **kwargs):
+            start_time = time.perf_counter()
+            result = func(*args, **kwargs)
+            end_time = time.perf_counter()
+            total_time = end_time - start_time
+            print(f'Function {func.__name__} Took {total_time:.4f} seconds')
+            return result
+        return timeit_wrapper
+    
+    @timeit
     def process_video(self):  
         # Check if filename is empty
         if self.filename == '':
@@ -108,6 +139,7 @@ class VideoThread(QThread):
             return                
 
         cap = cv2.VideoCapture(self.filename)
+        length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
         # Get the minimum n (12) window
         sliding_window = []
@@ -152,12 +184,17 @@ class VideoThread(QThread):
             # Handle Interruption i.e change file to be processed
             if self.interruptCurrentProcess:  
                 self.writer.close_videowriter()   
-                self.report.writeToCSV(subject, 1) 
-                self.report.clearPredictions()                                         
+                if self.use_hpe:
+                    self.report.writeToAngles(subject)
+                    self.report.clearPredictions()   
+                else:
+                    self.report.writeToCSV(subject, stride) 
+                    self.report.clearPredictions()                                         
                 self.append_output_log.emit("Processing Interrupted")
                 self.change_pixmap_signal.emit(self.interrupt_frame)  
                 self.startProcess = False
                 self.interruptCurrentProcess = False
+                self.update_progress_bar.emit(100) 
                 break
             
             # Read Frame from video
@@ -165,7 +202,12 @@ class VideoThread(QThread):
             if ret:     
                 full_frame = frame.copy()                      
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)                
-                # success, bb_frame = self.headPoseEstimation.process(frame.copy())
+                
+                if self.use_hpe:
+                    success, x, y, z, bb_frame = self.headPoseEstimation.process(frame.copy())
+                    self.report.addAngles(x, y, z)
+                    self.writer.writeToVideoHPE(bb_frame, subject)
+
                 # Send Bounding box frame
                 # bb_frame = self.localization_algorithm.mp_localize_bounding_box(frame)
                 # bb_frame = self.localization_algorithm.mp_face_mesh_crop_fixed_bb_centroid(frame.copy())
@@ -177,7 +219,7 @@ class VideoThread(QThread):
                 try:
                     self.change_pixmap_signal.emit(bb_frame)                                                          
                 except Exception as e:                    
-                    self.change_pixmap_signal.emit(frame)                                         
+                    self.change_pixmap_signal.emit(frame)                                                      
 
                 # # Dlib Correlation Tracker
                 # bb_frame = self.localization_algorithm.dlib_correlation_tracker(frame)
@@ -202,9 +244,12 @@ class VideoThread(QThread):
                     if self.prediction_model.is_categorical:
                         conf, label = self.prediction_model.process_categorical(np_sliding_window)
                     else:
-                        conf, label = self.prediction_model.process(np_sliding_window, conf=0.7)                    
-                    
-                   
+                        conf, label = self.prediction_model.process(np_sliding_window, conf=0.7)  
+
+                    # Progress Bar
+                    update = int((itr / length) * 100)                    
+                    self.update_progress_bar.emit(update)                   
+                                       
                     start_frame = itr - 11
                     end_frame = itr
                     if stride == 12:
@@ -235,7 +280,9 @@ class VideoThread(QThread):
                                                                                                             
                         sliding_window = []
                         norm_sliding_window = []  
-                        full_frame_sliding_window = []                         
+                        full_frame_sliding_window = []  
+
+                                              
                     else:
                         # 1 Strides
                         if write_itr != itr:                        
@@ -265,16 +312,184 @@ class VideoThread(QThread):
                 itr += 1
             else:        
                 self.writer.close_videowriter()         
-                self.report.writeToCSV(subject, 1)                
-                self.report.clearPredictions()             
+                if self.use_hpe:
+                    self.report.writeToAngles(subject)
+                    self.report.clearPredictions()   
+                else:
+                    self.report.writeToCSV(subject, stride) 
+                    self.report.clearPredictions()                        
+                self.append_output_log.emit("Video Finished") 
+                self.change_pixmap_signal.emit(self.success_frame)                    
+                self.startProcess = False 
+                self.filename = ""  
+                self.update_progress_bar.emit(100)                                                                    
+                break
+
+    @timeit
+    def process_video_pyramid(self):  
+        # Check if filename is empty
+        if self.filename == '':
+            self.startProcess = False
+            return                
+
+        cap = cv2.VideoCapture(self.filename)
+
+        # Get the minimum n (12) window
+        norm_sliding_window_12 = []
+        norm_sliding_window_24 = []
+        norm_sliding_window_48 = []
+        norm_sliding_window_96 = []                
+        itr = 0        
+        msg_pause_emit = True
+
+        stride = 12
+        # Writing detection variables
+        subject = self.filename.split('/')[-1]
+        subject = subject[:-4]
+
+        self.success_frame = np.full((224, 224, 3), (0, 255, 0), dtype=np.int8) 
+        self.interrupt_frame =  np.full((224, 224, 3), (255, 0, 0), dtype=np.int8)    
+        
+        # Create Target Directory    
+        if self.prediction_model.is_categorical:    
+            self.writer.createDirectory(os.path.join("results_categorical", subject))
+        else:
+            self.writer.createDirectory(os.path.join("results_binary", subject))
+
+
+        if (cap.isOpened()== False): 
+            print("Error opening video stream or file")
+            return
+        
+        self.append_output_log.emit("Processing Video")
+        while True:
+            # Pausing
+            while self.ourPause:
+                if self.interruptCurrentProcess:
+                    break                
+                time.sleep(0.2)
+                if msg_pause_emit:
+                    self.append_output_log.emit("Processing Paused")
+                    msg_pause_emit = False
+            # Re arm the message to re emit
+            msg_pause_emit = True
+            
+            # Handle Interruption i.e change file to be processed
+            if self.interruptCurrentProcess:  
+                self.writer.close_videowriter()   
+                if self.use_hpe:
+                    self.report.writeToAngles(subject)
+                    self.report.clearPredictions()   
+                else:
+                    self.report.writeToCSVBinary_pyramid(subject, stride, itr) 
+                    self.report.clearPredictions()                                         
+                self.append_output_log.emit("Processing Interrupted")
+                self.change_pixmap_signal.emit(self.interrupt_frame)  
+                self.startProcess = False
+                self.interruptCurrentProcess = False
+                break
+            
+            # Read Frame from video
+            ret, frame = cap.read()
+            if ret:     
+                full_frame = frame.copy()                      
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)                
+                
+                # Send Bounding box frame                
+                bb_frame = self.localization_algorithm.mp_face_mesh_crop(frame) # Semua menggunakan face mesh
+          
+                try:
+                    self.change_pixmap_signal.emit(bb_frame)                                                          
+                except Exception as e:                    
+                    self.change_pixmap_signal.emit(frame) 
+                                                    
+                # Process the frame using CNN-LSTM
+                frame = cv2.resize(bb_frame, (224, 224), interpolation=cv2.INTER_AREA)
+                normalized = frame / 255
+
+                # Pyramid                                 
+                norm_sliding_window_12.append(normalized)
+                if itr % 2 == 0:
+                    norm_sliding_window_24.append(normalized)
+                if itr % 4 == 0:
+                    norm_sliding_window_48.append(normalized)
+                if itr % 8 == 0:
+                    norm_sliding_window_96.append(normalized)
+                
+                
+                if len(norm_sliding_window_12) == 12:
+                    np_sliding_window = np.expand_dims(np.array(norm_sliding_window_12), axis=0) 
+                    if self.prediction_model.is_categorical:
+                        conf, label = self.prediction_model.process_categorical(np_sliding_window)
+                    else:
+                        conf, label = self.prediction_model.process(np_sliding_window, conf=0.7)                    
+                    
+                   
+                    start_frame = itr - 11
+                    end_frame = itr
+                    self.report.addPredictions_Binary_pyramid(self.binary_class_names, start_frame, end_frame, conf, label, 12)
+                    
+                    print("Pyramid", 12,"Label of frame", start_frame, "to", end_frame, "Label", label)  
+
+                    norm_sliding_window_12 = []
+                if len(norm_sliding_window_24) == 12:
+                    np_sliding_window = np.expand_dims(np.array(norm_sliding_window_24), axis=0) 
+                    if self.prediction_model.is_categorical:
+                        conf, label = self.prediction_model.process_categorical(np_sliding_window)
+                    else:
+                        conf, label = self.prediction_model.process(np_sliding_window, conf=0.7)                    
+                    
+                   
+                    start_frame = itr - 22
+                    end_frame = itr
+                    self.report.addPredictions_Binary_pyramid(self.binary_class_names, start_frame, end_frame, conf, label, 24)
+                    
+                    print("Pyramid", 24,"Label of frame", start_frame, "to", end_frame, "Label", label)  
+
+                    norm_sliding_window_24 = []
+                if len(norm_sliding_window_48) == 12:
+                    np_sliding_window = np.expand_dims(np.array(norm_sliding_window_48), axis=0) 
+                    if self.prediction_model.is_categorical:
+                        conf, label = self.prediction_model.process_categorical(np_sliding_window)
+                    else:
+                        conf, label = self.prediction_model.process(np_sliding_window, conf=0.7)                    
+                    
+                   
+                    start_frame = itr - 44
+                    end_frame = itr           
+                    self.report.addPredictions_Binary_pyramid(self.binary_class_names, start_frame, end_frame, conf, label, 48)         
+                    print("Pyramid", 48,"Label of frame", start_frame, "to", end_frame, "Label", label)   
+
+                    norm_sliding_window_48 = [] 
+                if len(norm_sliding_window_96) == 12:
+                    np_sliding_window = np.expand_dims(np.array(norm_sliding_window_96), axis=0) 
+                    if self.prediction_model.is_categorical:
+                        conf, label = self.prediction_model.process_categorical(np_sliding_window)
+                    else:
+                        conf, label = self.prediction_model.process(np_sliding_window, conf=0.7)                    
+                    
+                   
+                    start_frame = itr - 88
+                    end_frame = itr                    
+                    self.report.addPredictions_Binary_pyramid(self.binary_class_names, start_frame, end_frame, conf, label, 96)
+                    print("Pyramid", 96,"Label of frame", start_frame, "to", end_frame, "Label", label)                     
+
+                    norm_sliding_window_96 = []                                                                                                                                                                                                                        
+                itr += 1
+            else:        
+                self.writer.close_videowriter()         
+                if self.use_hpe:
+                    self.report.writeToAngles(subject)
+                    self.report.clearPredictions()   
+                else:
+                    self.report.writeToCSVBinary_pyramid(subject, stride, itr) 
+                    self.report.clearPredictions()                        
                 self.append_output_log.emit("Video Finished") 
                 self.change_pixmap_signal.emit(self.success_frame)                    
                 self.startProcess = False 
                 self.filename = ""                                                                   
                 break
                     
-
-
 
 class VideoWindow(QMainWindow):
     def __init__(self, parent=None):
@@ -304,6 +519,7 @@ class VideoWindow(QMainWindow):
         # connect its signal to the update_image slot
         self.thread.change_pixmap_signal.connect(self.update_image)  
         self.thread.append_output_log.connect(self.append_output_log)
+        self.thread.update_progress_bar.connect(self.update_progressbar)
         # start the thread        
         self.thread.start()                 
 
@@ -316,6 +532,12 @@ class VideoWindow(QMainWindow):
         self.errorLabel.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
 
         # Output Log Widget
+        self.ProgressBarLabel = QLabel()
+        self.ProgressBarLabel.setText("Progress")        
+
+        self.pbar = QProgressBar()
+        self.pbar.setValue(0)
+
         self.outputLogLabel = QLabel()
         self.outputLogLabel.setText("Output Log:")        
 
@@ -340,6 +562,7 @@ class VideoWindow(QMainWindow):
         fileMenu = menuBar.addMenu('&File')        
         fileMenu.addAction(openAction)        
         fileMenu.addAction(exitAction)
+        
 
         # Create a widget for window contents
         wid = QWidget(self)
@@ -359,7 +582,7 @@ class VideoWindow(QMainWindow):
         # VideoWidget Layout
         videoWidgetLayout = QVBoxLayout()
         videoWidgetLayout.setContentsMargins(0, 0, 0, 0)
-        videoWidgetLayout.addWidget(self.image_label)
+        videoWidgetLayout.addWidget(self.image_label)        
         videoWidgetLayout.addLayout(controlLayout)
 
         # Theatre Layout
@@ -369,7 +592,9 @@ class VideoWindow(QMainWindow):
         theatreLayout.addLayout(videoWidgetLayout)
 
         # Output Log Layout
-        outputLogLayout = QVBoxLayout()                   
+        outputLogLayout = QVBoxLayout()       
+        outputLogLayout.addWidget(self.ProgressBarLabel)
+        outputLogLayout.addWidget(self.pbar)         
         outputLogLayout.addWidget(self.outputLogLabel)
         outputLogLayout.addWidget(self.outputLogText)
         outputLogLayout.addStretch(0)
@@ -402,7 +627,8 @@ class VideoWindow(QMainWindow):
         else:
             self.filename = filename  
             self.thread.set_filename(self.filename)
-            self.thread.setInterruptCurrentProcess(True)                        
+            self.thread.setInterruptCurrentProcess(True)  
+                          
 
     def exitCall(self):
         self.thread.setThreadRunning(False)
@@ -418,11 +644,17 @@ class VideoWindow(QMainWindow):
 
     def handleError(self):
         self.playButton.setEnabled(False)
-        self.errorLabel.setText("Error: " + self.mediaPlayer.errorString())
+        self.errorLabel.setText("Error: " + self.mediaPlayer.errorString())    
 
-    # All the function below are to control and receive from class VideoThread
+    # All the function below are to control and receive from class VideoThread    
     def terminate_thread(self):
         self.thread.setThreadRunning(False)
+
+    @pyqtSlot(int)
+    def update_progressbar(self, msg):        
+        self.pbar.setValue(int(msg))
+        # if self.pbar.value() >= 99:
+        #     self.pbar.setValue(0)            
 
     def convert_cv_qt(self, cv_img):
         """Convert from an opencv image to QPixmap"""

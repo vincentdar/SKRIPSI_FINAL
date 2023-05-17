@@ -45,9 +45,9 @@ def create_mobilenet():
   # CNN Model
   cnn = tf.keras.models.Sequential()  
   cnn.add(mobilenet)
-  cnn.add(tf.keras.layers.Flatten())
+  # cnn.add(tf.keras.layers.Flatten())
 
-#   cnn.add(tf.keras.layers.GlobalAveragePooling2D())
+  cnn.add(tf.keras.layers.GlobalAveragePooling2D())
 #   cnn.add(tf.keras.layers.Dense(32))
 
   # RNN Model
@@ -76,15 +76,20 @@ def read_dataframe(filename):
   return features, labels
 
 if __name__ == "__main__":                   
-  test_features, test_labels = read_dataframe("testing_pubspeak.csv")
+  test_features, test_labels = read_dataframe("binary/testing_pubspeak_face_mesh_vals4.csv")
   
   test_ds = tf.data.Dataset.from_generator(create_dataset,
                                         args=(tf.convert_to_tensor(test_features), tf.convert_to_tensor(test_labels)),
                                         output_types=(tf.float32, tf.int64),
                                         output_shapes=((12, 224, 224, 3), ()))  
     
+  
+  # checkpoint_path = "checkpoint/local_mobilenet_cnnlstm_gapdense_newpubspeak_10_epoch_val_s4/cp.ckpt"
+  # checkpoint_path = "checkpoint/local_mobilenet_cnnlstm_flatten_newpubspeak_10_epoch_val_s4/cp.ckpt"
+  checkpoint_path = "checkpoint/local_mobilenet_cnnlstm_unfreezelast20_newpubspeak_10_epoch_val_s4/cp.ckpt"
+  # checkpoint_path = "checkpoint/local_mobilenet_cnnbilstm_newpubspeak_10_epoch_val_s4/cp.ckpt"  
+  # checkpoint_path = "checkpoint/local_c3d_fix_newpubspeak_10_epoch_val_s4/cp.ckpt"
 
-  checkpoint_path = "checkpoint/local_mobilenet_cnnlstm_flatten_newpubspeak_10_epoch_val_s4/cp.ckpt"  
     
   
   test_ds = test_ds.prefetch(tf.data.AUTOTUNE).batch(4)

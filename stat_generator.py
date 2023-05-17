@@ -13,6 +13,15 @@ def multiclass_report(gt, pred, video):
                                 labels=[0, 1, 2, 3, 4, 5],
                                 zero_division=0))
     confusionHeatmapCategorical(gt, pred, video)
+
+def multiclass_report_10(gt, pred, video):
+    print("ACCURACY REPORT")
+    print("Accuracy:", accuracy_score(np.array(gt), np.array(pred)))
+    print("CLASSIFICATION REPORT")
+    print(classification_report(np.array(gt), np.array(pred), 
+                                labels=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+                                zero_division=0))
+    confusionHeatmapCategorical(gt, pred, video)
     
 
 def binary_report(gt, pred, video):        
@@ -50,10 +59,29 @@ def confusionHeatmapCategorical(gt, pred, video):
 
     ax = sns.heatmap(conf_matrix, annot=True, fmt='d', )
     ax.set_xlabel("Predicted", fontsize=14, labelpad=20)
-    ax.xaxis.set_ticklabels(['0', '1', '2', '3', '4', '5'])
+    ax.xaxis.set_ticklabels(["Unknown", "Showing Emotions", "Blank Face", "Reading", "Head Tilt", "Occlusion"])
 
     ax.set_ylabel("Actual", fontsize=14, labelpad=20)
-    ax.yaxis.set_ticklabels(['0', '1', '2', '3', '4', '5'])
+    ax.yaxis.set_ticklabels(["Unknown", "Showing Emotions", "Blank Face", "Reading", "Head Tilt", "Occlusion"])
+
+    ax.set_title(video + " Categorical Confusion Matrix", fontsize=14, pad=20)
+
+    plt.show()
+
+def confusionHeatmapCategorical_10(gt, pred, video):    
+    conf_matrix = confusion_matrix(np.array(gt), np.array(pred), labels=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    plt.figure(figsize=(10,8), dpi=75)
+    # Scale up the size of all text
+    sns.set(font_scale = 1)
+
+    ax = sns.heatmap(conf_matrix, annot=True, fmt='d', )
+    ax.set_xlabel("Predicted", fontsize=12, labelpad=10)
+    ax.xaxis.set_ticklabels(["Unknown", "Eye\nContact", "Blank\nFace", "Showing\nEmotions", "Reading",
+                   "Sudden\nEye\nChange", "Smiling", "Not\nLooking", "Head\nTilt", "Occlusion"])
+
+    ax.set_ylabel("Actual", fontsize=12, labelpad=10)
+    ax.yaxis.set_ticklabels(["Unknown", "Eye\nContact", "Blank\nFace", "Showing\nEmotions", "Reading",
+                   "Sudden\nEye\nChange", "Smiling", "Not\nLooking", "Head\nTilt", "Occlusion"])
 
     ax.set_title(video + " Categorical Confusion Matrix", fontsize=14, pad=20)
 
@@ -294,30 +322,47 @@ def plot_segmentation_prediction(df):
     plt.title("Segmentation")
     plt.show()
 
+def plot_angles(df, video):
+    frame = df['Number']
+    x = df['X']
+    y = df['Y']
+    z = df['Z']
+    
+    
+
+    plt.figure(figsize=(10,8), dpi=75)            
+    plt.plot(frame, x, color='blue')
+    plt.plot(frame, y, color='yellow')
+    plt.plot(frame, z, color='green')    
+    plt.title(str(video) + " angles")
+    plt.legend()
+    plt.show()
+
 
 
 
 if __name__ == "__main__":   
-    print("LBP CASMEII")
-    filename = "evaluation\\lbp_casmeii_cut.csv"        
-    video = filename.split('\\')[-1]
-    lbp_df = pd.read_csv(filename)           
-    binary_report(lbp_df['GT'], lbp_df['Label'], video) 
+    # print("LBP CASMEII")
+    # filename = "evaluation\\lbp_casmeii_cut.csv"        
+    # video = filename.split('\\')[-1]
+    # lbp_df = pd.read_csv(filename)           
+    # binary_report(lbp_df['GT'], lbp_df['Label'], video) 
      
 
-    print("CNN LSTM CASMEII")
-    filename = "evaluation\\cnnlstm_casmeii_cut.csv"        
-    video = filename.split('\\')[-1]
-    df = pd.read_csv(filename)          
-    binary_report(df['GT'], df['Label'], video)
+    # print("CNN LSTM CASMEII")
+    # filename = "evaluation\\cnnlstm_casmeii_cut.csv"        
+    # video = filename.split('\\')[-1]
+    # df = pd.read_csv(filename)          
+    # binary_report(df['GT'], df['Label'], video)
 
     
-    # filename = "reports\\binary\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_10_epoch\S50_binary.csv"
+    # filename = "reports\\binary\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak25042023_10_epoch\S50_binary.csv"
     
-    # filename = "reports\\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_multiclass_merged_10_epoch\S50_categorical.csv"
+    # # filename = "reports\\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_multiclass_merged_10_epoch\S50_categorical.csv"
     # video = filename.split('\\')[-1]
     # df = pd.read_csv(filename)  
     # plot_segmentation_prediction(df)  
+
     # print("Sliding Window Based Evaluation (12 strides)")
     # sw_df = sliding_window_iou(df)      
     # calculate_mAP(sw_df)               
@@ -326,13 +371,70 @@ if __name__ == "__main__":
     # print("Per Frame Based Evaluation")    
     # generateReport(df, video)
 
-    # filename = "evaluation\\pubspeak21032023_lbp_summary.csv"
-    # video = "LBP S50"
-    # df = pd.read_csv(filename)   
-    # df = df[df['Subject'] == 'S50']
-    # print(df)
-    # # binary_report(df['GT'], df['Label'], video)
-    # plot_segmentation_prediction(df)
+    filename = "evaluation\\pubspeak21032023_lbp_summary.csv"    
+    df = pd.read_csv(filename)         
+    binary_report(df['GT'], df['Label'], "LBP-X2")    
+
+    # Buku
+    # filename = r"reports\\BUKU\\pyramid\\S3_binary_pyramid.csv"
+    # df = pd.read_csv(filename)      
+    # print("Per Frame Based Evaluation")    
+    # generateReport(df, "S3 Pyramid")
+
+    # filename = r"reports\\BUKU\\pyramid\\S3_binary.csv"
+    # df = pd.read_csv(filename)       
+    # print("Per Frame Based Evaluation")    
+    # generateReport(df, "S3")
+
+    # Independen
+    # filename = r"reports\\BUKU\categorical\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_multiclass_merged_10_epoch\s4_categorical.csv"
+    
+    # # filename = "reports\\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_multiclass_merged_10_epoch\S50_categorical.csv"
+    # video = filename.split('\\')[-1]
+    # df = pd.read_csv(filename)  
+    # # plot_segmentation_prediction(df)  
+
+    # # print("Sliding Window Based Evaluation (12 strides)")
+    # # sw_df = sliding_window_iou(df)      
+    # # calculate_mAP(sw_df)               
+    # # generateReport(sw_df, "Testing Set (S4, S50)")
+
+    # print("Per Frame Based Evaluation")    
+    # generateReport(df, video)
+
+    # filename = r"reports\\BUKU\categorical\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_multiclass_merged_10_epoch\s50_categorical.csv"
+    
+    # # filename = "reports\\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_multiclass_merged_10_epoch\S50_categorical.csv"
+    # video = filename.split('\\')[-1]
+    # df = pd.read_csv(filename)  
+    # # plot_segmentation_prediction(df)  
+
+    # # print("Sliding Window Based Evaluation (12 strides)")
+    # # sw_df = sliding_window_iou(df)      
+    # # calculate_mAP(sw_df)               
+    # # generateReport(sw_df, "Testing Set (S4, S50)")
+
+    # print("Per Frame Based Evaluation")    
+    # generateReport(df, video)
+
+    # # 10 Class
+    # filename = r"reports\\BUKU\Model22\testdata.csv"
+    # df = pd.read_csv(filename)  
+    # multiclass_report_10(df['GT'], df['Label'], "testdata.csv")
+    # confusionHeatmapCategorical_10(df['GT'], df['Label'], "testdata.csv")
+
+
+    # Buku HPE
+    # filename = r"reports\\BUKU\HPE\Radian\S4_angles.csv"
+    # df = pd.read_csv(filename)  
+    # video = filename.split('\\')[-1]  
+
+    # plot_angles(df, video)   
+
+
+
+
+
 
 
     

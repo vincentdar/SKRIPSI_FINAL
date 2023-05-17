@@ -69,6 +69,7 @@ class Writer:
     def close_videowriter(self):
         if self.video_writer != None:
             self.video_writer.release()
+            self.video_writer = None
         
     def writeToVideo(self, image, subject, label, number, class_names):
         self.set_videowriter(subject, image, class_names)    
@@ -81,11 +82,17 @@ class Writer:
         cv2.putText(image, "Pred: " + class_names[label], (int(0.01 * self.width), int(0.05 * self.height)),
                      cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 0, 0), 2)     
         # GT
-        if gt_label == -1:
+        if gt_label != -1:
             cv2.putText(image, "GT: " + class_names[gt_label], (int(0.01 * self.width), int(0.12 * self.height)),
                         cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 0, 0), 2)    
         else:
             cv2.putText(image, "GT: " + "None", (int(0.01 * self.width), int(0.12 * self.height)),
                     cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 0, 0), 2)     
         self.video_writer.write(image)
+
+    def writeToVideoHPE(self, image, subject):
+        self.set_videowriter(subject, image, "")   
+        
+        self.video_writer.write(cv2.cvtColor(image, cv2.COLOR_RGB2BGR)) 
+
 

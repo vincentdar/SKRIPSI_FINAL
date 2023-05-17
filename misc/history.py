@@ -30,7 +30,7 @@ for line in lines:
 
 epochs = range(len(loss_lst))
 
-title = "transfer_mobilenet_cnnlstm_tfrecord_100_epoch"
+title = "local_c3d_fix_newpubspeak_10_epoch_val_s4"
 # Plot loss
 plt.figure(figsize=(9, 4))
 plt.subplot(1, 2, 1)

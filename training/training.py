@@ -91,15 +91,15 @@ def create_mobilenet():
   # CNN Model
   cnn = tf.keras.models.Sequential()  
   cnn.add(mobilenet)
-  # cnn.add(tf.keras.layers.Flatten())
+  cnn.add(tf.keras.layers.Flatten())
 
-  cnn.add(tf.keras.layers.GlobalAveragePooling2D())
+  # cnn.add(tf.keras.layers.GlobalAveragePooling2D())
   # cnn.add(tf.keras.layers.Dense(32))
 
   # RNN Model
   rnn = tf.keras.models.Sequential()
   rnn.add(tf.keras.layers.TimeDistributed(cnn))
-  rnn.add(tf.keras.layers.LSTM(64))
+  rnn.add(tf.keras.layers.LSTM(32))
 
   rnn.add(tf.keras.layers.Dense(1, activation="sigmoid"))
 
@@ -181,8 +181,8 @@ def read_dataframe(filename):
 
 
 if __name__ == "__main__":                 
-  train_features, train_labels, train_augments = read_dataframe("binary/training_pubspeak_21032023_face_detection.csv")
-  test_features, test_labels, _ = read_dataframe("binary/testing_pubspeak_21032023_face_detection.csv")
+  train_features, train_labels, train_augments = read_dataframe("binary/training_pubspeak_face_mesh_vals4.csv")
+  test_features, test_labels, _ = read_dataframe("binary/testing_pubspeak_face_mesh_vals4.csv")
 
   train_ds = tf.data.Dataset.from_generator(create_dataset,
                                           args=(tf.convert_to_tensor(train_features), tf.convert_to_tensor(train_labels)),
@@ -196,7 +196,7 @@ if __name__ == "__main__":
   
   
 
-  checkpoint_path = "checkpoint/local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_64lstm_10_epoch/cp.ckpt"
+  checkpoint_path = "checkpoint/local_mobilenet_unfreezelast20_flatten_cnnlstm_10_epoch_val_s4/cp.ckpt"
   checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(checkpoint_path,
                                                           monitor='val_accuracy',
                                                           save_weights_only=True,
@@ -222,7 +222,7 @@ if __name__ == "__main__":
   hist_df = pd.DataFrame(history.history) 
 
   # or save to csv: 
-  hist_csv_file = 'history/history_local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_64lstm_10_epoch.csv'
+  hist_csv_file = 'history/history_local_mobilenet_unfreezelast20_flatten_cnnlstm_10_epoch_val_s4.csv'
   with open(hist_csv_file, mode='w') as f:
       hist_df.to_csv(f)
 
