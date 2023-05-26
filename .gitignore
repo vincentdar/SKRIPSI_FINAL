@@ -10,4 +10,6 @@ shape_predictor_68_face_landmarks.dat
 /training/checkpoint
 /results_categorical
 /results_video
+/output
+/results_clip
 /training/nvvm

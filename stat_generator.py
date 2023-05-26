@@ -371,15 +371,15 @@ if __name__ == "__main__":
     # print("Per Frame Based Evaluation")    
     # generateReport(df, video)
 
-    filename = "evaluation\\pubspeak21032023_lbp_summary.csv"    
-    df = pd.read_csv(filename)         
-    binary_report(df['GT'], df['Label'], "LBP-X2")    
+    # filename = "evaluation\\pubspeak21032023_lbp_summary.csv"    
+    # df = pd.read_csv(filename)         
+    # binary_report(df['GT'], df['Label'], "LBP-X2")    
 
     # Buku
-    # filename = r"reports\\BUKU\\pyramid\\S3_binary_pyramid.csv"
-    # df = pd.read_csv(filename)      
-    # print("Per Frame Based Evaluation")    
-    # generateReport(df, "S3 Pyramid")
+    filename = r"reports\\BUKU\\ModelB_vals4\\testdata.csv"
+    df = pd.read_csv(filename)      
+    print("Per Frame Based Evaluation")    
+    generateReport(df, "Testing Set (S4, S50)")
 
     # filename = r"reports\\BUKU\\pyramid\\S3_binary.csv"
     # df = pd.read_csv(filename)       
@@ -389,7 +389,7 @@ if __name__ == "__main__":
     # Independen
     # filename = r"reports\\BUKU\categorical\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_multiclass_merged_10_epoch\s4_categorical.csv"
     
-    # # filename = "reports\\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_multiclass_merged_10_epoch\S50_categorical.csv"
+    # filename = "reports\\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_multiclass_merged_10_epoch\S50_categorical.csv"
     # video = filename.split('\\')[-1]
     # df = pd.read_csv(filename)  
     # # plot_segmentation_prediction(df)  

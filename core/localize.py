@@ -114,6 +114,46 @@ class Localize:
             return faceROI
         else:
             return (detected, xleft, ytop, xright, ybot)
+        
+
+    def localizeFace_mediapipe_model_far(self, image, return_image=True):
+        height, width, _ = image.shape    
+        faceROI = np.zeros((224, 224, 3))
+        xleft, ytop, xright, ybot = 0, 0, 0, 0
+        detected = False
+
+        with self.mp_face_detection.FaceDetection(model_selection=0, min_detection_confidence=0.5) as face_detection: 
+            image.flags.writeable = False
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            results = face_detection.process(image)
+
+            # Draw the face detection annotations on the image.
+            image.flags.writeable = True
+            image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+            if results.detections:
+                detected = True
+                for detection in results.detections:
+                    # mp_drawing.draw_detection(image, detection)
+                    location = detection.location_data
+                    relative_bounding_box = location.relative_bounding_box
+                    relative_bounding_box = location.relative_bounding_box
+                    rect_start_point = self._normalized_to_pixel_coordinates(
+                        relative_bounding_box.xmin, relative_bounding_box.ymin, width,
+                        height)
+                    rect_end_point = self._normalized_to_pixel_coordinates(
+                        relative_bounding_box.xmin + relative_bounding_box.width,
+                        relative_bounding_box.ymin + relative_bounding_box.height, width,
+                        height)
+
+                    xleft, ytop=rect_start_point
+                    xright, ybot=rect_end_point
+                    faceROI = image[ytop:ybot,xleft:xright]
+                    faceROI = cv2.resize(faceROI, (224, 224), interpolation=cv2.INTER_CUBIC)
+                    break
+        if return_image:   
+            return faceROI
+        else:
+            return (detected, xleft, ytop, xright, ybot)
     
     # Tracking the bounding box via average to "smooth out"
     def average_tracked_point(self, tracked_point):
@@ -451,9 +491,13 @@ class Localize:
                     except Exception:
                         pass
                     # END CODE
-            return self.blank_frame
+            return self.blank_frame 
         
     def mp_face_mesh_crop_preprocessing(self, frame):
+        xleft = 0
+        ytop = 0
+        xright = 0
+        ybot = 0
         with self.mp_face_mesh.FaceMesh(max_num_faces=1,
                                         refine_landmarks=True,
                                         min_detection_confidence=0.5,

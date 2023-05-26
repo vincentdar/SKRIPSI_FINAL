@@ -21,6 +21,7 @@ import cv2
 import numpy as np
 import time
 import os
+from datetime import datetime
 from functools import wraps
 
 
@@ -45,10 +46,11 @@ class VideoThread(QThread):
         # self.prediction_model.mobilenet_binary("core\weights/transfer_mobilenet_unfreezelast20_pubspeak_cnnlstm_tfrecord_pyramid_1_loso_S2/cp.ckpt") #Model 10
         # self.prediction_model.mobilenet_binary("core\weights/transfer_mobilenet_unfreezelast20_pubspeak_cnnlstm_tfrecord_pyramid_1_loso_S3/cp.ckpt") #Model 11
         
+        # self.prediction_model.mobilenet_binary("training\checkpoint\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak_10_epoch_val_s4/cp.ckpt")
         # self.prediction_model.mobilenet_binary("training\checkpoint\local_mobilenet_cnnlstm_newpubspeak21032023_10_epoch/cp.ckpt")
         # self.prediction_model.mobilenet_binary("training\checkpoint\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_10_epoch/cp.ckpt")
         # self.prediction_model.mobilenet_binary("training\checkpoint\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_augmented_10_epoch/cp.ckpt")
-        self.prediction_model.mobilenet_binary("training\checkpoint\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak25042023_10_epoch/cp.ckpt")
+        # self.prediction_model.mobilenet_binary("training\checkpoint\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak25042023_10_epoch/cp.ckpt")
 
         # self.prediction_model.mobilenet_binary("training\checkpoint\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_augmented_10_epoch/cp.ckpt")
         # self.prediction_model.mobilenet_categorical("training\checkpoint\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak15032023_multiclass_10_epoch/cp.ckpt") #Model 22
@@ -57,14 +59,22 @@ class VideoThread(QThread):
         # self.prediction_model.mobilenet_categorical("training\checkpoint\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_multiclass_merged_10_epoch/cp.ckpt") 
         # self.prediction_model.mobilenet_categorical("training\checkpoint\local_mobilenet_cnnlstm_newpubspeak21032023_multiclass_focal_loss_merged_10_epoch/cp.ckpt")        
         # self.prediction_model.mobilenet_categorical("training\checkpoint\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_multiclass_merged_augmented_10_epoch/cp.ckpt")                                   
-        # self.prediction_model.mobilenet_categorical("training\checkpoint\local_mobilenet_cnnlstm_newpubspeak25042023_multiclass_focal_loss_10_epoch/cp.ckpt")                                   
+        self.prediction_model.mobilenet_categorical("training\checkpoint\local_mobilenet_cnnlstm_newpubspeak25042023_multiclass_focal_loss_10_epoch/cp.ckpt")                                   
+        
+        # Recording Utility
+        self.startRecord = False
+
         # Report
         self.report = Report(self.prediction_model.is_categorical)
         self.report_folder = "reports"
 
         # Writer
         self.writer = Writer(self.report)
-        self.destination_folder = "results_categorical"   
+        self.destination_folder = "results_categorical"
+        # ['Images', 'Clip', 'Video']
+        # self.output_video_type = "Images"
+        # self.output_video_type = "Clip"
+        self.output_video_type = "Video"   
 
         # HPE
         self.headPoseEstimation = HeadPoseEstimation()
@@ -74,6 +84,7 @@ class VideoThread(QThread):
         self.categorical_class_names = ["Unknown", "Showing Emotions", "Blank Face", "Reading", "Head Tilt", "Occlusion"]
         # self.categorical_class_names = ["Unknown", "Eye Contact", "Blank Face", "Showing Emotions", "Reading",
         #            "Sudden Eye Change", "Smiling", "Not Looking", "Head Tilt", "Occlusion"]
+        # self.binary_class_names = ["Unfocused", "Focused"]
         self.binary_class_names = ["Negative", "Positive"]
         
         # Control the thread
@@ -104,6 +115,11 @@ class VideoThread(QThread):
         else:
             self.interruptCurrentProcess = False
 
+        if self.startRecord:
+            self.interruptCurrentProcess = interruptCurrentProcess            
+        else:
+            self.interruptCurrentProcess = False
+
     def getInterruptCurrentProcess(self):
         return self.interruptCurrentProcess
 
@@ -111,13 +127,21 @@ class VideoThread(QThread):
         self.startProcess = startProcess
 
     def getStartProcess(self):
-        return self.startProcess          
+        return self.startProcess 
+
+    def setStartRecord(self, startRecord):
+        self.startRecord = startRecord 
+
+    def getStartRecord(self):
+        return self.startRecord       
 
     def run(self):
         while self.threadRunning: 
             if self.startProcess:         
                 self.process_video()                       
-                # self.process_video_pyramid()                 
+                # self.process_video_pyramid()    
+            if self.startRecord:
+                self.record_video()             
                   
 
     def timeit(func):
@@ -131,15 +155,51 @@ class VideoThread(QThread):
             return result
         return timeit_wrapper
     
+    def record_video(self):
+        self.success_frame = np.full((224, 224, 3), (0, 255, 0), dtype=np.int8) 
+        self.interrupt_frame =  np.full((224, 224, 3), (255, 0, 0), dtype=np.int8)   
+
+        now = datetime.now()
+        output_destination_folder = "output/" + str(now).replace(":","_") 
+                 
+        cap = cv2.VideoCapture(0)
+     
+        if (cap.isOpened()== False): 
+            print("Error recording video")
+            return
+        
+        print("Start recording...")
+        self.append_output_log.emit("Start recording...")
+        while True:
+            ret, frame = cap.read()
+            if ret:                
+                # Handle Interruption i.e change file to be processed
+                if self.startRecord == False:                                       
+                    self.append_output_log.emit("Record Stopped")
+                    self.change_pixmap_signal.emit(self.success_frame)                                                                                 
+                    break                 
+
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)     
+                self.writer.writeToVideo_raw(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB), output_destination_folder)                                                          
+                try:
+                    self.change_pixmap_signal.emit(frame)                                                          
+                except Exception as e:                    
+                    self.change_pixmap_signal.emit(frame)  
+                              
+                            
+        self.filename = output_destination_folder+".mp4"                                             
+        self.append_output_log.emit("Record Finished") 
+        self.change_pixmap_signal.emit(self.success_frame)  
+        self.writer.close_videowriter()      
+    
     @timeit
     def process_video(self):  
         # Check if filename is empty
         if self.filename == '':
             self.startProcess = False
-            return                
-
+            return 
         cap = cv2.VideoCapture(self.filename)
-        length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))                       
 
         # Get the minimum n (12) window
         sliding_window = []
@@ -148,6 +208,7 @@ class VideoThread(QThread):
         itr = 0
         write_itr = 0
         msg_pause_emit = True
+        self.blank_frame = np.zeros((224, 224, 3))
 
         stride = 12
         # Writing detection variables
@@ -163,6 +224,9 @@ class VideoThread(QThread):
         else:
             self.writer.createDirectory(os.path.join("results_binary", subject))
 
+        # Create Target "Clip" Directory
+        if self.output_video_type == "Clip":
+            self.writer.createDirectory(os.path.join("results_clip", subject))
 
         if (cap.isOpened()== False): 
             print("Error opening video stream or file")
@@ -211,11 +275,24 @@ class VideoThread(QThread):
                 # Send Bounding box frame
                 # bb_frame = self.localization_algorithm.mp_localize_bounding_box(frame)
                 # bb_frame = self.localization_algorithm.mp_face_mesh_crop_fixed_bb_centroid(frame.copy())
-                bb_frame = self.localization_algorithm.mp_face_mesh_crop(frame) # Semua menggunakan face mesh
-                # bb_frame = self.localization_algorithm.mp_face_mesh_crop_fixed_bb_nose_tip(frame)
+                (detection, xleft, ytop, xright, ybot) = self.localization_algorithm.mp_face_mesh_crop_preprocessing(frame) # Semua menggunakan face mesh
+                try:
+                    temp_frame = frame[ytop:ybot,
+                                    xleft:xright]
+                    bb_frame = cv2.resize(temp_frame, (224, 224), interpolation=cv2.INTER_AREA)                    
+                except Exception:
+                    bb_frame = self.blank_frame
+                    pass
 
+                cv2.rectangle(full_frame, 
+                            (xleft, ytop), 
+                            (xright, ybot),
+                            (0, 0, 255), 2)
+                # bb_frame = self.localization_algorithm.mp_face_mesh_crop_fixed_bb_nose_tip(frame) 
                 # bb_frame = self.localization_algorithm.mp_localize_crop_scale(frame) # Ide Ko Hans
-                # bb_frame = self.localization_algorithm.mp_localize_crop(frame)                
+                # bb_frame = self.localization_algorithm.mp_localize_crop(frame)
+                # bb_frame = self.localization_algorithm.localizeFace_mediapipe(frame)
+                               
                 try:
                     self.change_pixmap_signal.emit(bb_frame)                                                          
                 except Exception as e:                    
@@ -227,15 +304,22 @@ class VideoThread(QThread):
                 #     self.change_pixmap_signal.emit(bb_frame)
                 # except Exception as e:
                 #     self.change_pixmap_signal.emit(frame)
+
                 # Process the frame using CNN-LSTM
                 frame = cv2.resize(bb_frame, (224, 224), interpolation=cv2.INTER_AREA)
                 normalized = frame / 255
+
+                try:
+                    self.change_pixmap_signal.emit(frame)                                                          
+                except Exception as e:                    
+                    self.change_pixmap_signal.emit(frame)   
+                
 
                 sliding_window.append(frame)
                 norm_sliding_window.append(normalized)
                 full_frame_sliding_window.append(full_frame)
                 if len(norm_sliding_window) > 12:
-                    sliding_window.pop(0)            
+                    sliding_window.pop(0)  
                     norm_sliding_window.pop(0)
                     full_frame_sliding_window.pop(0)
                 
@@ -260,29 +344,35 @@ class VideoThread(QThread):
                             self.report.addPredictions_Binary(self.binary_class_names, start_frame, end_frame, conf, label)
                         print("Label of frame", start_frame, "to", end_frame, "Label", label)
                         
-                        # Image          
-                        # for image in sliding_window:                                                
-                        #     if self.prediction_model.is_categorical:
-                        #         # Categorical Writing
-                        #         self.writer.writeToImagesCategorical(image, start_frame, subject, label)  
-                        #     else:
-                        #         # Binary Writing
-                        #         self.writer.writeToImages(image, start_frame, subject, label)                                                                        
-                        #     start_frame += 1   
-
-                        # Video Categorical
-                        for image in full_frame_sliding_window:  
-                            if self.prediction_model.is_categorical:                      
-                                self.writer.writeToVideo(image, subject, label, itr, self.categorical_class_names)
-                            else:
-                                self.writer.writeToVideo(image, subject, label, itr, self.binary_class_names)
-                            start_frame += 1   
+                        if self.output_video_type == "Images":                                                             
+                            for image in sliding_window:                                                
+                                if self.prediction_model.is_categorical:
+                                    # Categorical Writing
+                                    self.writer.writeToImagesCategorical(image, start_frame, subject, label)  
+                                else:
+                                    # Binary Writing
+                                    self.writer.writeToImages(image, start_frame, subject, label)                                                                        
+                                start_frame += 1   
+                        elif self.output_video_type == "Video":
+                            # Video
+                            for image in full_frame_sliding_window:  
+                                if self.prediction_model.is_categorical:                      
+                                    self.writer.writeToVideo(image, subject, label, itr, self.categorical_class_names)
+                                else:
+                                    self.writer.writeToVideo(image, subject, label, itr, self.binary_class_names)
+                                start_frame += 1  
+                        elif self.output_video_type == "Clip":
+                            # Clip
+                            for image in full_frame_sliding_window:  
+                                if self.prediction_model.is_categorical:                      
+                                    self.writer.writeToClip(image, subject, label, itr, self.categorical_class_names)
+                                else:
+                                    self.writer.writeToClip(image, subject, label, itr, self.binary_class_names)
+                                start_frame += 1  
                                                                                                             
                         sliding_window = []
                         norm_sliding_window = []  
-                        full_frame_sliding_window = []  
-
-                                              
+                        full_frame_sliding_window = []                                                
                     else:
                         # 1 Strides
                         if write_itr != itr:                        
@@ -348,7 +438,8 @@ class VideoThread(QThread):
         subject = subject[:-4]
 
         self.success_frame = np.full((224, 224, 3), (0, 255, 0), dtype=np.int8) 
-        self.interrupt_frame =  np.full((224, 224, 3), (255, 0, 0), dtype=np.int8)    
+        self.interrupt_frame =  np.full((224, 224, 3), (255, 0, 0), dtype=np.int8)  
+            
         
         # Create Target Directory    
         if self.prediction_model.is_categorical:    
@@ -498,21 +589,34 @@ class VideoWindow(QMainWindow):
         self.disply_width = 640
         self.display_height = 480
         self.filename = '' 
+
+        # with open('Ubuntu.qss', 'r', encoding='utf-8') as file:
+        #     stylesheet = file.read()
+        # self.setStyleSheet(stylesheet)
         
         # Upload Process Widget
+        self.recordButton = QPushButton()
+        self.recordButton.setEnabled(True)
+        self.recordButton.setText("Record")    
+        # self.recordButton.setMinimumSize(150, 150) 
+        # self.recordButton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)        
+        self.recordButton.clicked.connect(self.record)
+
         self.uploadButton = QPushButton()
         self.uploadButton.setEnabled(True)
-        self.uploadButton.setText("Upload")        
+        self.uploadButton.setText("Upload")         
         self.uploadButton.clicked.connect(self.openFile)
 
         self.processButton = QPushButton()
         self.processButton.setEnabled(True)
-        self.processButton.setText("Process")
+        self.processButton.setText("Process")    
         self.processButton.clicked.connect(self.process)
 
         # OpenCV Image Label
         self.image_label = QLabel()
         self.image_label.resize(self.disply_width, self.display_height)
+        self.black_frame =  np.full((224, 224, 3), (0, 0, 0), dtype=np.int8)
+        self.update_image(self.black_frame)
 
         # create the video capture thread
         self.thread = VideoThread()
@@ -571,8 +675,13 @@ class VideoWindow(QMainWindow):
         # Upload Process Left Button Layout
         uploadProcessLayout = QVBoxLayout()
         uploadProcessLayout.setContentsMargins(0, 0, 0, 0)
+        uploadProcessLayout.addWidget(self.recordButton)
         uploadProcessLayout.addWidget(self.uploadButton)
-        uploadProcessLayout.addWidget(self.processButton)        
+        uploadProcessLayout.addWidget(self.processButton) 
+        uploadProcessLayout.addStretch()
+        # uploadProcessLayout.setStretchFactor(self.recordButton, 2)
+        # uploadProcessLayout.setStretchFactor(self.uploadButton, 2)
+        # uploadProcessLayout.setStretchFactor(self.processButton, 2)               
 
         # Create layouts to place inside widget
         controlLayout = QHBoxLayout()
@@ -615,6 +724,24 @@ class VideoWindow(QMainWindow):
         # Set widget to contain window contents
         wid.setLayout(layout)
 
+    def record(self):
+        if self.thread.getStartRecord() == True:
+            print("Recording Stop")
+            self.append_output_log("Recording Stop") 
+            self.thread.setStartRecord(False)
+
+            self.uploadButton.setEnabled(True)           
+            self.processButton.setEnabled(True)           
+            self.playButton.setEnabled(True)                     
+        elif self.thread.getStartRecord() == False:
+            print("Recording Start")
+            self.append_output_log("Recording Start") 
+            self.thread.setStartRecord(True) 
+
+            self.uploadButton.setEnabled(False)           
+            self.processButton.setEnabled(False)           
+            self.playButton.setEnabled(False)           
+
     def openFile(self):        
         filename, _ = QFileDialog.getOpenFileName(self, "Open Video", QDir.homePath())        
         if self.filename == '':     
@@ -642,9 +769,9 @@ class VideoWindow(QMainWindow):
             self.thread.setPause(True)            
             self.playButton.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
 
-    def handleError(self):
-        self.playButton.setEnabled(False)
-        self.errorLabel.setText("Error: " + self.mediaPlayer.errorString())    
+    # def handleError(self):
+    #     self.playButton.setEnabled(False)
+    #     self.errorLabel.setText("Error: " + self.mediaPlayer.errorString())    
 
     # All the function below are to control and receive from class VideoThread    
     def terminate_thread(self):
