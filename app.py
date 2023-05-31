@@ -50,7 +50,7 @@ class VideoThread(QThread):
         # self.prediction_model.mobilenet_binary("training\checkpoint\local_mobilenet_cnnlstm_newpubspeak21032023_10_epoch/cp.ckpt")
         # self.prediction_model.mobilenet_binary("training\checkpoint\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_10_epoch/cp.ckpt")
         # self.prediction_model.mobilenet_binary("training\checkpoint\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_augmented_10_epoch/cp.ckpt")
-        # self.prediction_model.mobilenet_binary("training\checkpoint\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak25042023_10_epoch/cp.ckpt")
+        self.prediction_model.mobilenet_binary("training\checkpoint\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak25042023_10_epoch/cp.ckpt")
 
         # self.prediction_model.mobilenet_binary("training\checkpoint\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_augmented_10_epoch/cp.ckpt")
         # self.prediction_model.mobilenet_categorical("training\checkpoint\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak15032023_multiclass_10_epoch/cp.ckpt") #Model 22
@@ -59,7 +59,7 @@ class VideoThread(QThread):
         # self.prediction_model.mobilenet_categorical("training\checkpoint\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_multiclass_merged_10_epoch/cp.ckpt") 
         # self.prediction_model.mobilenet_categorical("training\checkpoint\local_mobilenet_cnnlstm_newpubspeak21032023_multiclass_focal_loss_merged_10_epoch/cp.ckpt")        
         # self.prediction_model.mobilenet_categorical("training\checkpoint\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_multiclass_merged_augmented_10_epoch/cp.ckpt")                                   
-        self.prediction_model.mobilenet_categorical("training\checkpoint\local_mobilenet_cnnlstm_newpubspeak25042023_multiclass_focal_loss_10_epoch/cp.ckpt")                                   
+        # self.prediction_model.mobilenet_categorical("training\checkpoint\local_mobilenet_cnnlstm_newpubspeak25042023_multiclass_focal_loss_10_epoch/cp.ckpt")                                   
         
         # Recording Utility
         self.startRecord = False
@@ -210,7 +210,7 @@ class VideoThread(QThread):
         msg_pause_emit = True
         self.blank_frame = np.zeros((224, 224, 3))
 
-        stride = 12
+        stride = 1
         # Writing detection variables
         subject = self.filename.split('/')[-1]
         subject = subject[:-4]
