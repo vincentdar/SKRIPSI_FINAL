@@ -376,7 +376,7 @@ if __name__ == "__main__":
     # binary_report(df['GT'], df['Label'], "LBP-X2")    
 
     # Buku
-    filename = r"D:\CodeProject2\SKRIPSI_FINAL\reports\PerFramePrediction\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_10_epoch\testdata.csv"
+    filename = r"D:\CodeProject2\SKRIPSI_FINAL\reports\PerFramePrediction\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak25042023_10_epoch\testdata.csv"
     df = pd.read_csv(filename)      
     print("Per Frame Based Evaluation")    
     generateReport(df, "Testing Set (S4, S50) 1 stride")

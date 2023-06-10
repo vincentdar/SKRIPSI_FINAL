@@ -6,24 +6,31 @@ class Settings:
         self.filename = "settings.json"  
         self.settings_dict = dict()     
 
-    def save(self):
-        pass
-        # f = open(self.filename, 'w')
+    def default_config(self):                
+        # Describe output type of the processed video
+        # ['Images', 'Clip', 'Video']
+        # self.settings["output_type"] = "Images"
+        self.settings_dict["output_type"] = "Video"        
+        # self.settings["output_type"] = "Clip"
+
+        # Binary Or Multiclass
+        self.settings_dict["classification"] = "binary"
+        # self.settings["classification"] = "multiclass"        
+
+        # Serializing json          
+        with open("settings.json", "w") as outfile:
+            json.dump(self.settings_dict, outfile)        
         
-        # # Describe output type of the processed video
-        # self.settings["output_type"] = "video"
-        # # self.settings["output_type"] = "images"
-
-        # # Head Pose Estimation Output
-        # # self.settings["hpe"] = "yes"
-        # # self.settings["hpe"] = "no"
-
-        # f.write(str(self.settings))
-        # f.close()        
 
     def load(self):    
-        f = open(self.filename, 'r')
-        data = f.read()
-        self.settings_dict = json.loads(data)
-        f.close()    
-        pass
+        try:
+            f = open(self.filename, 'r')
+            data = f.read()
+            self.settings_dict = json.loads(data)
+            print(self.settings_dict["output_type"])
+            print(self.settings_dict["classification"])
+            f.close()    
+        except Exception as e:
+            print("Config file corrupt.. set to default config")
+            self.default_config()
+            self.load()

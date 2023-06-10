@@ -32,14 +32,21 @@ class VideoThread(QThread):
 
     def __init__(self):
         QThread.__init__(self)
-        # self.settings = Settings()        
-        # self.settings.load()
-        # self.settings_dict = self.settings.settings_dict
+        self.settings = Settings()              
+        self.settings.load()
+        self.settings_dict = self.settings.settings_dict
+        print(self.settings_dict)
         # Initialize Localization Algorithm
         self.localization_algorithm = Localize() 
 
         # Initialize Spotting Algorithm
-        self.prediction_model = CNNLSTM()     
+        self.prediction_model = CNNLSTM()  
+        if self.settings_dict['classification'] == "binary":            
+            self.prediction_model.mobilenet_binary("training\checkpoint\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak25042023_10_epoch/cp.ckpt")
+        elif self.settings_dict['classification'] == "multiclass":
+            self.prediction_model.mobilenet_categorical("training\checkpoint\local_mobilenet_cnnlstm_newpubspeak25042023_multiclass_focal_loss_10_epoch/cp.ckpt")
+
+        # DO NOT CHANGE UNLESS PERMITTED
         # self.prediction_model.test_cudnn()          
         # self.prediction_model.mobilenet_binary("core\weights/transfer_mobilenet_pubspeak_cnnlstm_tfrecord/cp.ckpt") #Benedict Hebert
         # self.prediction_model.mobilenet_binary("core\weights/transfer_mobilenet_unfreezelast20_pubspeak_cnnlstm_tfrecord_pyramid_1_loso_S1/cp.ckpt") #Model 9
@@ -50,7 +57,7 @@ class VideoThread(QThread):
         # self.prediction_model.mobilenet_binary("training\checkpoint\local_mobilenet_cnnlstm_newpubspeak21032023_10_epoch/cp.ckpt")
         # self.prediction_model.mobilenet_binary("training\checkpoint\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_10_epoch/cp.ckpt")
         # self.prediction_model.mobilenet_binary("training\checkpoint\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_augmented_10_epoch/cp.ckpt")
-        self.prediction_model.mobilenet_binary("training\checkpoint\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak25042023_10_epoch/cp.ckpt")
+        # self.prediction_model.mobilenet_binary("training\checkpoint\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak25042023_10_epoch/cp.ckpt")
 
         # self.prediction_model.mobilenet_binary("training\checkpoint\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_augmented_10_epoch/cp.ckpt")
         # self.prediction_model.mobilenet_categorical("training\checkpoint\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak15032023_multiclass_10_epoch/cp.ckpt") #Model 22
@@ -60,7 +67,7 @@ class VideoThread(QThread):
         # self.prediction_model.mobilenet_categorical("training\checkpoint\local_mobilenet_cnnlstm_newpubspeak21032023_multiclass_focal_loss_merged_10_epoch/cp.ckpt")        
         # self.prediction_model.mobilenet_categorical("training\checkpoint\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_multiclass_merged_augmented_10_epoch/cp.ckpt")                                   
         # self.prediction_model.mobilenet_categorical("training\checkpoint\local_mobilenet_cnnlstm_newpubspeak25042023_multiclass_focal_loss_10_epoch/cp.ckpt")                                   
-        
+            
         # Recording Utility
         self.startRecord = False
 
@@ -70,12 +77,14 @@ class VideoThread(QThread):
 
         # Writer
         self.writer = Writer(self.report)
-        self.destination_folder = "results_categorical"
         # ['Images', 'Clip', 'Video']
-        # self.output_video_type = "Images"
-        # self.output_video_type = "Clip"
-        self.output_video_type = "Video"   
-
+        if self.settings_dict['output_type'] == "binary":            
+            self.output_video_type = "Images"
+        elif self.settings_dict['output_type'] == "multiclass":
+            self.output_video_type = "Clip"
+        elif self.settings_dict['output_type'] == "multiclass":
+            self.output_video_type = "Video"         
+       
         # HPE
         self.headPoseEstimation = HeadPoseEstimation()
         self.use_hpe = False
@@ -585,7 +594,7 @@ class VideoThread(QThread):
 class VideoWindow(QMainWindow):
     def __init__(self, parent=None):
         super(VideoWindow, self).__init__(parent)        
-        self.setWindowTitle("ISpeak Micro-expressions Detection")
+        self.setWindowTitle("ISpeak Public Speaking expressions Detection")
         self.disply_width = 640
         self.display_height = 480
         self.filename = '' 
@@ -665,8 +674,8 @@ class VideoWindow(QMainWindow):
         menuBar = self.menuBar()
         fileMenu = menuBar.addMenu('&File')        
         fileMenu.addAction(openAction)        
-        fileMenu.addAction(exitAction)
-        
+        fileMenu.addAction(exitAction)        
+        # settingsBar = menuBar.addMenu('&Settings')        
 
         # Create a widget for window contents
         wid = QWidget(self)
@@ -678,10 +687,7 @@ class VideoWindow(QMainWindow):
         uploadProcessLayout.addWidget(self.recordButton)
         uploadProcessLayout.addWidget(self.uploadButton)
         uploadProcessLayout.addWidget(self.processButton) 
-        uploadProcessLayout.addStretch()
-        # uploadProcessLayout.setStretchFactor(self.recordButton, 2)
-        # uploadProcessLayout.setStretchFactor(self.uploadButton, 2)
-        # uploadProcessLayout.setStretchFactor(self.processButton, 2)               
+        uploadProcessLayout.addStretch()             
 
         # Create layouts to place inside widget
         controlLayout = QHBoxLayout()
