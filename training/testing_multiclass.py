@@ -7,6 +7,10 @@ import cv2
 import math
 from keras import backend as K
 
+from sklearn.metrics import confusion_matrix, classification_report, accuracy_score, precision_score, recall_score
+import seaborn as sns
+
+
 def parse_image(filename):  
   image = tf.io.read_file(filename)
   image = tf.io.decode_image(image)
@@ -135,11 +139,91 @@ def compile_model_focal_loss(model):
 
 def read_dataframe(filename):
   df = pd.read_csv(filename)  
-#   df = df.sample(frac=1, random_state=42)  
-  df = df.sample(frac=1)  
   features = df.drop('Label', axis=1)
   labels = df['Label']
   return features, labels
+
+def multiclass_report(gt, pred, video):
+    print("ACCURACY REPORT")
+    print("Accuracy:", accuracy_score(np.array(gt), np.array(pred)))
+    print("CLASSIFICATION REPORT")
+    print(classification_report(np.array(gt), np.array(pred), 
+                                labels=[0, 1, 2, 3, 4, 5],
+                                zero_division=0))
+    confusionHeatmapCategorical(gt, pred, video)
+
+def multiclass_report_10(gt, pred, video):
+    print("ACCURACY REPORT")
+    print("Accuracy:", accuracy_score(np.array(gt), np.array(pred)))
+    print("CLASSIFICATION REPORT")
+    print(classification_report(np.array(gt), np.array(pred), 
+                                labels=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+                                zero_division=0))
+    confusionHeatmapCategorical(gt, pred, video)
+    
+
+def binary_report(gt, pred, video):        
+    print("ACCURACY REPORT")
+    print("Accuracy:", accuracy_score(np.array(gt), np.array(pred)))
+    print("CLASSIFICATION REPORT")
+    print(classification_report(np.array(gt), np.array(pred), 
+                                labels=[0, 1],
+                                zero_division=0))
+    confusionHeatmapBinary(gt, pred, video)
+   
+
+def confusionHeatmapBinary(gt, pred, video):    
+    conf_matrix = confusion_matrix(np.array(gt), np.array(pred), labels=[0, 1])
+    plt.figure(figsize=(10,8), dpi=75)
+    # Scale up the size of all text
+    sns.set(font_scale = 1)
+
+    ax = sns.heatmap(conf_matrix, annot=True, fmt='d', )
+    ax.set_xlabel("Predicted", fontsize=14, labelpad=20)
+    ax.xaxis.set_ticklabels(['0', '1'])
+
+    ax.set_ylabel("Actual", fontsize=14, labelpad=20)
+    ax.yaxis.set_ticklabels(['0', '1'])
+
+    ax.set_title(video + " Binary Confusion Matrix", fontsize=14, pad=20)
+
+    plt.show()
+
+def confusionHeatmapCategorical(gt, pred, video):    
+    conf_matrix = confusion_matrix(np.array(gt), np.array(pred), labels=[0, 1, 2, 3, 4, 5])
+    plt.figure(figsize=(10,8), dpi=75)
+    # Scale up the size of all text
+    sns.set(font_scale = 1)
+
+    ax = sns.heatmap(conf_matrix, annot=True, fmt='d', )
+    ax.set_xlabel("Predicted", fontsize=14, labelpad=20)
+    ax.xaxis.set_ticklabels(["Unknown", "Showing Emotions", "Blank Face", "Reading", "Head Tilt", "Occlusion"])
+
+    ax.set_ylabel("Actual", fontsize=14, labelpad=20)
+    ax.yaxis.set_ticklabels(["Unknown", "Showing Emotions", "Blank Face", "Reading", "Head Tilt", "Occlusion"])
+
+    ax.set_title(video + " Categorical Confusion Matrix", fontsize=14, pad=20)
+
+    plt.show()
+
+def confusionHeatmapCategorical_10(gt, pred, video):    
+    conf_matrix = confusion_matrix(np.array(gt), np.array(pred), labels=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    plt.figure(figsize=(10,8), dpi=75)
+    # Scale up the size of all text
+    sns.set(font_scale = 1)
+
+    ax = sns.heatmap(conf_matrix, annot=True, fmt='d', )
+    ax.set_xlabel("Predicted", fontsize=12, labelpad=10)
+    ax.xaxis.set_ticklabels(["Unknown", "Eye\nContact", "Blank\nFace", "Showing\nEmotions", "Reading",
+                   "Sudden\nEye\nChange", "Smiling", "Not\nLooking", "Head\nTilt", "Occlusion"])
+
+    ax.set_ylabel("Actual", fontsize=12, labelpad=10)
+    ax.yaxis.set_ticklabels(["Unknown", "Eye\nContact", "Blank\nFace", "Showing\nEmotions", "Reading",
+                   "Sudden\nEye\nChange", "Smiling", "Not\nLooking", "Head\nTilt", "Occlusion"])
+
+    ax.set_title(video + " Categorical Confusion Matrix", fontsize=14, pad=20)
+
+    plt.show()
 
 
 if __name__ == "__main__": 
@@ -148,45 +232,31 @@ if __name__ == "__main__":
   class_names = ["Unknown", "Showing Emotions", "Blank Face", "Reading",
                    "Head Tilt", "Occlusion"]                
   
-  test_features, test_labels = read_dataframe("categorical/testing_pubspeak15032023_multiclass_merged_face_detection.csv")
+  test_features, test_labels = read_dataframe("categorical/testing_S168_multiclass.csv")
+  # test_features, test_labels = read_dataframe("categorical/coba.csv")
   
   test_ds = tf.data.Dataset.from_generator(create_dataset,
                                         args=(tf.convert_to_tensor(test_features), tf.convert_to_tensor(test_labels)),
                                         output_types=(tf.float32, tf.int64),
                                         output_shapes=((12, 224, 224, 3), (6)))  
   
-  
-  
 
-  checkpoint_path = "checkpoint/local_mobilenet_cnnlstm_unfreezelast20_newpubspeak15032023_multiclass_merged_focal_loss_10_epoch/cp.ckpt"
+
+  checkpoint_path = "checkpoint/local_mobilenet_cnnlstm_newpubspeak25042023_multiclass_focal_loss_10_epoch_mix/cp.ckpt"
 
   test_ds = test_ds.prefetch(tf.data.AUTOTUNE).batch(4)
 
   model = create_mobilenet()  
   model.load_weights(checkpoint_path)
   model = compile_model(model)
-#   model.evaluate(test_ds)
+  pred = model.predict(test_ds)
+  pred = tf.argmax(pred, axis=1)
+  pred = np.array(pred)
+  gt = np.array(test_labels)
+  multiclass_report(gt, pred, "testdata.csv")  
+  
 
-  # y_pred = model.predict(test_ds)
 
-  # y = tf.argmax(y_pred, axis=1)
-  # print(y.shape)
-  for videos, labels in test_ds.take(5):   
-    y_pred = model.predict(videos)
-    
-    for i in range(4):
-        plt.figure(figsize=(12, 8))  
-        pred = tf.argmax(y_pred[i])
-        pred_label = class_names[pred]
-        index = tf.argmax(labels[i], axis=0)
-        label = class_names[index]  
-        plt.suptitle("Pred: " + str(pred_label) + " GT:" + str(label))            
-        for j in range(12):        
-            plt.subplot(3, 4, j + 1)
-            plt.imshow(videos[i][j])
-            plt.title(str(j+1))
-            plt.axis('off')
-        plt.show()   
 
        
 

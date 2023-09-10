@@ -157,6 +157,77 @@ def sliding_window_iou(df):
                                             "Label", "GT",
                                             "tIoU"])
     
+def sliding_window_iou_10(df):
+    if len(df['Class Names'].unique()) > 2:
+        sw_df = []
+        unique_index = df['Index'].unique()
+        for index in unique_index:
+            df_index = df[df['Index'] == index]
+            diff = 0                
+            for _, row, in df_index.iterrows():
+                if row['Label'] == row['GT']:
+                    diff += 1
+                
+            tIoU = diff / 12
+            max_gt = df_index['GT'].max()
+            max_label = df_index['Label'].max()
+            if max_label == 0:
+                conf = df_index[df_index['Label'] == max_label]['Unknown']
+            elif max_label == 1:
+                conf = df_index[df_index['Label'] == max_label]['Eye Contact']
+            elif max_label == 2:
+                conf = df_index[df_index['Label'] == max_label]['Blank Face']
+            elif max_label == 3:
+                conf = df_index[df_index['Label'] == max_label]['Showing Emotions']
+            elif max_label == 4:
+                conf = df_index[df_index['Label'] == max_label]['Reading']
+            elif max_label == 5:
+                conf = df_index[df_index['Label'] == max_label]['Sudden Eye Change']
+            elif max_label == 6:
+                conf = df_index[df_index['Label'] == max_label]['Smiling']
+            elif max_label == 7:
+                conf = df_index[df_index['Label'] == max_label]['Not Looking']
+            elif max_label == 8:
+                conf = df_index[df_index['Label'] == max_label]['Head Tilt']
+            elif max_label == 9:
+                conf = df_index[df_index['Label'] == max_label]['Occlusion']
+
+            data = [df_index['Index'].values[0], df_index['Class Names'].values[0], 
+                    df_index['Number'].values[0], conf,
+                    max_label, max_gt,
+                    tIoU]
+            sw_df.append(data)
+
+        return pd.DataFrame(sw_df, columns=["Index", "Class Names",
+                                            "Number", "Conf",
+                                            "Label", "GT",
+                                            "tIoU"])
+    else:
+        sw_df = []
+        unique_index = df['Index'].unique()
+        for index in unique_index:
+            df_index = df[df['Index'] == index]
+            diff = 0                
+            for _, row, in df_index.iterrows():
+                if row['Label'] == row['GT']:
+                    diff += 1
+                
+            tIoU = diff / 12
+            max_gt = df_index['GT'].max()
+            max_label = df_index['Label'].max() 
+            conf = df_index[df_index['Label'] == max_label]['Conf'].max()           
+
+            data = [df_index['Index'].values[0], df_index['Class Names'].values[0], 
+                    df_index['Number'].values[0], conf,
+                    max_label, max_gt,
+                    tIoU]
+            sw_df.append(data)
+
+        return pd.DataFrame(sw_df, columns=["Index", "Class Names",
+                                            "Number", "Conf",
+                                            "Label", "GT",
+                                            "tIoU"])
+    
 
 
 def ClassificationReport(df, tIoU_thres=0.5):  
@@ -328,8 +399,6 @@ def plot_angles(df, video):
     y = df['Y']
     z = df['Z']
     
-    
-
     plt.figure(figsize=(10,8), dpi=75)            
     plt.plot(frame, x, color='blue')
     plt.plot(frame, y, color='yellow')
@@ -342,102 +411,28 @@ def plot_angles(df, video):
 
 
 if __name__ == "__main__":   
-    # print("LBP CASMEII")
-    # filename = "evaluation\\lbp_casmeii_cut.csv"        
-    # video = filename.split('\\')[-1]
-    # lbp_df = pd.read_csv(filename)           
-    # binary_report(lbp_df['GT'], lbp_df['Label'], video) 
-     
-
-    # print("CNN LSTM CASMEII")
-    # filename = "evaluation\\cnnlstm_casmeii_cut.csv"        
-    # video = filename.split('\\')[-1]
-    # df = pd.read_csv(filename)          
-    # binary_report(df['GT'], df['Label'], video)
-
-    
-    # filename = "reports\\binary\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak25042023_10_epoch\S50_binary.csv"
-    
-    # # filename = "reports\\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_multiclass_merged_10_epoch\S50_categorical.csv"
-    # video = filename.split('\\')[-1]
-    # df = pd.read_csv(filename)  
-    # plot_segmentation_prediction(df)  
-
-    # print("Sliding Window Based Evaluation (12 strides)")
-    # sw_df = sliding_window_iou(df)      
-    # calculate_mAP(sw_df)               
-    # generateReport(sw_df, video)
-
-    # print("Per Frame Based Evaluation")    
-    # generateReport(df, video)
-
-    # filename = "evaluation\\pubspeak21032023_lbp_summary.csv"    
-    # df = pd.read_csv(filename)         
-    # binary_report(df['GT'], df['Label'], "LBP-X2")    
-
     # Buku
-    filename = r"D:\CodeProject2\SKRIPSI_FINAL\reports\PerFramePrediction\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak25042023_10_epoch\testdata.csv"
-    df = pd.read_csv(filename)      
-    print("Per Frame Based Evaluation")    
-    generateReport(df, "Testing Set (S4, S50) 1 stride")
-
-    # filename = r"reports\\BUKU\\pyramid\\S3_binary.csv"
-    # df = pd.read_csv(filename)       
-    # print("Per Frame Based Evaluation")    
-    # generateReport(df, "S3")
-
-    # Independen
-    # filename = r"reports\\BUKU\categorical\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_multiclass_merged_10_epoch\s4_categorical.csv"
-    
-    # filename = "reports\\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_multiclass_merged_10_epoch\S50_categorical.csv"
-    # video = filename.split('\\')[-1]
-    # df = pd.read_csv(filename)  
-    # # plot_segmentation_prediction(df)  
-
-    # # print("Sliding Window Based Evaluation (12 strides)")
-    # # sw_df = sliding_window_iou(df)      
-    # # calculate_mAP(sw_df)               
-    # # generateReport(sw_df, "Testing Set (S4, S50)")
-
-    # print("Per Frame Based Evaluation")    
-    # generateReport(df, video)
-
-    # filename = r"reports\\BUKU\categorical\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_multiclass_merged_10_epoch\s50_categorical.csv"
-    
-    # # filename = "reports\\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_multiclass_merged_10_epoch\S50_categorical.csv"
-    # video = filename.split('\\')[-1]
-    # df = pd.read_csv(filename)  
-    # # plot_segmentation_prediction(df)  
-
-    # # print("Sliding Window Based Evaluation (12 strides)")
-    # # sw_df = sliding_window_iou(df)      
-    # # calculate_mAP(sw_df)               
-    # # generateReport(sw_df, "Testing Set (S4, S50)")
-
-    # print("Per Frame Based Evaluation")    
-    # generateReport(df, video)
-
-    # # 10 Class
-    # filename = r"reports\\BUKU\Model22\testdata.csv"
-    # df = pd.read_csv(filename)  
-    # multiclass_report_10(df['GT'], df['Label'], "testdata.csv")
-    # confusionHeatmapCategorical_10(df['GT'], df['Label'], "testdata.csv")
-
-
-    # Buku HPE
-    # filename = r"reports\\BUKU\HPE\Radian\S4_angles.csv"
-    # df = pd.read_csv(filename)  
-    # video = filename.split('\\')[-1]  
-
-    # plot_angles(df, video)   
-
-
-
-
-
-
-
+    path = r"D:\CodeProject2\SKRIPSI_FINAL\reports\BUKU\categorical\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_multiclass_merged_augmented_10_epoch"
+    filename = path + "\S4_categorical.csv"
+    filename2 = path + "\S50_categorical.csv"
+    df = pd.read_csv(filename)
+    df2 = pd.read_csv(filename2)    
+    df = sliding_window_iou(df)
+    df2 = sliding_window_iou(df2)
     
 
+    print("Original", len(df['tIoU']))
+    df = df[df["tIoU"] >= 1.0]
+    print("Cut", len(df['tIoU']))
+
+    print("Original", len(df2['tIoU']))
+    df2 = df2[df2["tIoU"] >= 1.0]
+    print("Cut", len(df2['tIoU']))
+
     
+    # multiclass_report(df['GT'], df['Label'], "testdata.csv")
+    
+
+
+
     

@@ -187,29 +187,38 @@ if __name__ == "__main__":
     class_names = ["Unknown", "Eye Contact", "Blank Face", "Showing Emotions", "Reading",
                    "Sudden Eye Change", "Smiling", "Not Looking", "Head Tilt", "Occlusion"]
             
-    # Training
-    filewriter = open('training_pubspeak_multiclass_25042023_face_detection.csv',  'w')
-    # Augmented
-    # filewriter.write("1,2,3,4,5,6,7,8,9,10,11,12,Label,Augmentation\n")    
-    # create_training_csv_multiclass_augmented( "D:\Dataset Skripsi Batch Final Image Face Detection",
-    #                                           "D:\CodeProject2\SKRIPSI_FINAL\pubspeak_label_21032023.xlsx",
-    #                                           "Training",
-    #                                           filewriter,
-    #                                           class_names)
-    filewriter.write("1,2,3,4,5,6,7,8,9,10,11,12,Label\n")
-    create_training_csv_multiclass( "D:\Dataset Skripsi Batch Final Image Face Detection",
-                                    "D:\CodeProject2\SKRIPSI_FINAL\pubspeak_label_25042023.xlsx",
-                                    "Training",
-                                    filewriter,
-                                    class_names)
-    filewriter.close()
+    # # Training
+    # filewriter = open('training_pubspeak_multiclass_25042023_face_detection.csv',  'w')
+    # # Augmented
+    # # filewriter.write("1,2,3,4,5,6,7,8,9,10,11,12,Label,Augmentation\n")    
+    # # create_training_csv_multiclass_augmented( "D:\Dataset Skripsi Batch Final Image Face Detection",
+    # #                                           "D:\CodeProject2\SKRIPSI_FINAL\pubspeak_label_21032023.xlsx",
+    # #                                           "Training",
+    # #                                           filewriter,
+    # #                                           class_names)
+    # filewriter.write("1,2,3,4,5,6,7,8,9,10,11,12,Label\n")
+    # create_training_csv_multiclass( "D:\Dataset Skripsi Batch Final Image Face Detection",
+    #                                 "D:\CodeProject2\SKRIPSI_FINAL\pubspeak_label_25042023.xlsx",
+    #                                 "Training",
+    #                                 filewriter,
+    #                                 class_names)
+    # filewriter.close()
 
-    # Testing
-    filewriter = open('testing_pubspeak_multiclass_25042023_face_detection.csv',  'w')
+    # # Testing
+    # filewriter = open('testing_pubspeak_multiclass_25042023_face_detection.csv',  'w')
+    # filewriter.write("1,2,3,4,5,6,7,8,9,10,11,12,Label\n")
+    # create_training_csv_multiclass( "D:\Dataset Skripsi Batch Final Image Face Detection",
+    #                                 "D:\CodeProject2\SKRIPSI_FINAL\pubspeak_label_25042023.xlsx",
+    #                                 "Testing",
+    #                                 filewriter,
+    #                                 class_names)
+    # filewriter.close()
+
+    filewriter = open('testing_S168_multiclass.csv',  'w')
     filewriter.write("1,2,3,4,5,6,7,8,9,10,11,12,Label\n")
     create_training_csv_multiclass( "D:\Dataset Skripsi Batch Final Image Face Detection",
-                                    "D:\CodeProject2\SKRIPSI_FINAL\pubspeak_label_25042023.xlsx",
-                                    "Testing",
+                                    "D:\CodeProject2\SKRIPSI_FINAL\pubspeak_label_BARU.xlsx",
+                                    "Warna Kulit",
                                     filewriter,
                                     class_names)
     filewriter.close()

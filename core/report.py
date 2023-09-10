@@ -116,7 +116,7 @@ class Report:
             iterate += 1
         f.close()
 
-    def writeToCSVCategorical(self, subject): 
+    def writeToCSVCategorical(self, subject, stride): 
         have_evaluation = False
         if subject in list(self.df['Subject'].unique()):
             have_evaluation = True
@@ -128,7 +128,7 @@ class Report:
                 + "Number" + "," + "Label" + "," + "GT" + "\n")
         iterate = 0
         for index, sentence in enumerate(self.predictions):
-            for i in range(0, 12):
+            for i in range(0, stride):
                 class_name = sentence[0]
                 start_frame = sentence[1]
                 end_frame = sentence[2]
@@ -151,7 +151,7 @@ class Report:
                 iterate += 1
         f.close()
 
-    def writeToCSVBinary(self, subject): 
+    def writeToCSVBinary(self, subject, stride): 
         have_evaluation = False
         if subject in list(self.df['Subject'].unique()):
             have_evaluation = True
@@ -160,7 +160,7 @@ class Report:
         f.write("Index" + "," + "Class Names" + "," + "Conf" + "," + "Number" + "," + "Label" + "," + "GT" + "\n")
         iterate = 0
         for index, sentence in enumerate(self.predictions):
-            for i in range(0, 12):
+            for i in range(0, stride):
                 class_name = sentence[0]
                 start_frame = sentence[1]
                 end_frame = sentence[2]
@@ -180,9 +180,15 @@ class Report:
     def writeSummaryCategorical(self, subject):
         # Write to CSV        
         f = open(os.path.join(self.destination_folder, subject + "_categorical.csv"), "w")
+        # f.write("Index" + "," + "Class Names" + "," + "Start Frame" + "," + "End Frame" 
+        #         + "Unknown" + ","  + "Showing Emotions" + ","  + "Blank Face" + ","
+        #         + "Reading" + ","  + "Head Tilt" + ","  + "Occlusion" + "," 
+        #         + "Label"  + "\n")       
         f.write("Index" + "," + "Class Names" + "," + "Start Frame" + "," + "End Frame" 
-                + "Unknown" + ","  + "Showing Emotions" + ","  + "Blank Face" + ","
-                + "Reading" + ","  + "Head Tilt" + ","  + "Occlusion" + "," 
+                + "0" + ","  + "1" + ","  + "2" + ","
+                + "3" + ","  + "4" + ","  + "5" + ","  +
+                + "6" + ","  + "7" + ","  + "8" + ","  +
+                + "9" + ","  + 
                 + "Label"  + "\n")        
         for index, sentence in enumerate(self.predictions):
                 class_name = sentence[0]
@@ -194,12 +200,23 @@ class Report:
                 conf3 = sentence[6]
                 conf4 = sentence[7]
                 conf5 = sentence[8]
+                conf6 = sentence[5]
+                conf7 = sentence[6]
+                conf8 = sentence[7]
+                conf9 = sentence[8]
+
                 label = sentence[9]
 
+                # f.write(str(index) + "," + class_name +  "," + 
+                #         str(start_frame) + "," + str(end_frame) + "," +
+                #         str(conf0) + "," + str(conf1) + "," + str(conf2) + "," +
+                #         str(conf3) + "," + str(conf4) + "," + str(conf5) + "," +
+                #         str(label) + "\n")
                 f.write(str(index) + "," + class_name +  "," + 
                         str(start_frame) + "," + str(end_frame) + "," +
                         str(conf0) + "," + str(conf1) + "," + str(conf2) + "," +
                         str(conf3) + "," + str(conf4) + "," + str(conf5) + "," +
+                        str(conf6) + "," + str(conf7) + "," + str(conf8) + "," + str(conf9) + "," +
                         str(label) + "\n")
                 iterate += 1
         f.close()
@@ -251,9 +268,9 @@ class Report:
     
         else:
             if self.is_categorical:
-                self.writeToCSVCategorical(subject)                
+                self.writeToCSVCategorical(subject, stride)                
             else:
-                self.writeToCSVBinary(subject)
+                self.writeToCSVBinary(subject, stride)
     
 
     def writeToCSVBinary_perframe(self, subject): 

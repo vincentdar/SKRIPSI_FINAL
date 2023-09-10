@@ -46,9 +46,11 @@ class VideoThread(QThread):
         elif self.settings_dict['classification'] == "multiclass":
             self.prediction_model.mobilenet_categorical("training\checkpoint\local_mobilenet_cnnlstm_newpubspeak25042023_multiclass_focal_loss_10_epoch/cp.ckpt")
 
+        
         # DO NOT CHANGE UNLESS PERMITTED
         # self.prediction_model.test_cudnn()          
         # self.prediction_model.mobilenet_binary("core\weights/transfer_mobilenet_pubspeak_cnnlstm_tfrecord/cp.ckpt") #Benedict Hebert
+        # self.prediction_model.mobilenet_binary("core\Weights/transfer_mobilenet_pubspeak_cnnlstm_tfrecord_1_loso_S3/cp.ckpt") #LOSO S3 exp 1
         # self.prediction_model.mobilenet_binary("core\weights/transfer_mobilenet_unfreezelast20_pubspeak_cnnlstm_tfrecord_pyramid_1_loso_S1/cp.ckpt") #Model 9
         # self.prediction_model.mobilenet_binary("core\weights/transfer_mobilenet_unfreezelast20_pubspeak_cnnlstm_tfrecord_pyramid_1_loso_S2/cp.ckpt") #Model 10
         # self.prediction_model.mobilenet_binary("core\weights/transfer_mobilenet_unfreezelast20_pubspeak_cnnlstm_tfrecord_pyramid_1_loso_S3/cp.ckpt") #Model 11
@@ -58,6 +60,7 @@ class VideoThread(QThread):
         # self.prediction_model.mobilenet_binary("training\checkpoint\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_10_epoch/cp.ckpt")
         # self.prediction_model.mobilenet_binary("training\checkpoint\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_augmented_10_epoch/cp.ckpt")
         # self.prediction_model.mobilenet_binary("training\checkpoint\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak25042023_10_epoch/cp.ckpt")
+        # self.prediction_model.mobilenet_binary("training\checkpoint\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak25042023_10_epoch_mix/cp.ckpt")
 
         # self.prediction_model.mobilenet_binary("training\checkpoint\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_augmented_10_epoch/cp.ckpt")
         # self.prediction_model.mobilenet_categorical("training\checkpoint\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak15032023_multiclass_10_epoch/cp.ckpt") #Model 22
@@ -68,6 +71,8 @@ class VideoThread(QThread):
         # self.prediction_model.mobilenet_categorical("training\checkpoint\local_mobilenet_cnnlstm_unfreezelast20_newpubspeak21032023_multiclass_merged_augmented_10_epoch/cp.ckpt")                                   
         # self.prediction_model.mobilenet_categorical("training\checkpoint\local_mobilenet_cnnlstm_newpubspeak25042023_multiclass_focal_loss_10_epoch/cp.ckpt")                                   
             
+        # self.prediction_model.mobilenet_categorical("training\checkpoint\local_mobilenet_cnnlstm_newpubspeak25042023_multiclass_focal_loss_10_epoch_mix/cp.ckpt")                                   
+        
         # Recording Utility
         self.startRecord = False
 
@@ -78,21 +83,23 @@ class VideoThread(QThread):
         # Writer
         self.writer = Writer(self.report)
         # ['Images', 'Clip', 'Video']
-        if self.settings_dict['output_type'] == "binary":            
+        if self.settings_dict['output_type'] == "Images":            
             self.output_video_type = "Images"
-        elif self.settings_dict['output_type'] == "multiclass":
+        elif self.settings_dict['output_type'] == "Clip":
             self.output_video_type = "Clip"
-        elif self.settings_dict['output_type'] == "multiclass":
-            self.output_video_type = "Video"         
+        elif self.settings_dict['output_type'] == "Video":
+            self.output_video_type = "Video"      
+        else:
+            self.output_video_type = "Video"   
        
         # HPE
         self.headPoseEstimation = HeadPoseEstimation()
         self.use_hpe = False
 
         # Class Names
-        self.categorical_class_names = ["Unknown", "Showing Emotions", "Blank Face", "Reading", "Head Tilt", "Occlusion"]
-        # self.categorical_class_names = ["Unknown", "Eye Contact", "Blank Face", "Showing Emotions", "Reading",
-        #            "Sudden Eye Change", "Smiling", "Not Looking", "Head Tilt", "Occlusion"]
+        # self.categorical_class_names = ["Unknown", "Showing Emotions", "Blank Face", "Reading", "Head Tilt", "Occlusion"]
+        self.categorical_class_names = ["Unknown", "Eye Contact", "Blank Face", "Showing Emotions", "Reading",
+                   "Sudden Eye Change", "Smiling", "Not Looking", "Head Tilt", "Occlusion"]
         # self.binary_class_names = ["Unfocused", "Focused"]
         self.binary_class_names = ["Negative", "Positive"]
         
@@ -120,12 +127,14 @@ class VideoThread(QThread):
 
     def setInterruptCurrentProcess(self, interruptCurrentProcess):
         if self.startProcess:
-            self.interruptCurrentProcess = interruptCurrentProcess            
+            self.interruptCurrentProcess = interruptCurrentProcess 
+            return           
         else:
             self.interruptCurrentProcess = False
 
         if self.startRecord:
-            self.interruptCurrentProcess = interruptCurrentProcess            
+            self.interruptCurrentProcess = interruptCurrentProcess   
+            return         
         else:
             self.interruptCurrentProcess = False
 
@@ -219,7 +228,7 @@ class VideoThread(QThread):
         msg_pause_emit = True
         self.blank_frame = np.zeros((224, 224, 3))
 
-        stride = 1
+        stride = 12
         # Writing detection variables
         subject = self.filename.split('/')[-1]
         subject = subject[:-4]
@@ -254,7 +263,7 @@ class VideoThread(QThread):
             # Re arm the message to re emit
             msg_pause_emit = True
             
-            # Handle Interruption i.e change file to be processed
+            # Handle Interruption i.e change file to be processed            
             if self.interruptCurrentProcess:  
                 self.writer.close_videowriter()   
                 if self.use_hpe:
@@ -280,10 +289,7 @@ class VideoThread(QThread):
                     success, x, y, z, bb_frame = self.headPoseEstimation.process(frame.copy())
                     self.report.addAngles(x, y, z)
                     self.writer.writeToVideoHPE(bb_frame, subject)
-
-                # Send Bounding box frame
-                # bb_frame = self.localization_algorithm.mp_localize_bounding_box(frame)
-                # bb_frame = self.localization_algorithm.mp_face_mesh_crop_fixed_bb_centroid(frame.copy())
+               
                 (detection, xleft, ytop, xright, ybot) = self.localization_algorithm.mp_face_mesh_crop_preprocessing(frame) # Semua menggunakan face mesh
                 try:
                     temp_frame = frame[ytop:ybot,
@@ -297,22 +303,11 @@ class VideoThread(QThread):
                             (xleft, ytop), 
                             (xright, ybot),
                             (0, 0, 255), 2)
-                # bb_frame = self.localization_algorithm.mp_face_mesh_crop_fixed_bb_nose_tip(frame) 
-                # bb_frame = self.localization_algorithm.mp_localize_crop_scale(frame) # Ide Ko Hans
-                # bb_frame = self.localization_algorithm.mp_localize_crop(frame)
-                # bb_frame = self.localization_algorithm.localizeFace_mediapipe(frame)
-                               
                 try:
                     self.change_pixmap_signal.emit(bb_frame)                                                          
                 except Exception as e:                    
                     self.change_pixmap_signal.emit(frame)                                                      
 
-                # # Dlib Correlation Tracker
-                # bb_frame = self.localization_algorithm.dlib_correlation_tracker(frame)
-                # try:
-                #     self.change_pixmap_signal.emit(bb_frame)
-                # except Exception as e:
-                #     self.change_pixmap_signal.emit(frame)
 
                 # Process the frame using CNN-LSTM
                 frame = cv2.resize(bb_frame, (224, 224), interpolation=cv2.INTER_AREA)
@@ -354,13 +349,13 @@ class VideoThread(QThread):
                         print("Label of frame", start_frame, "to", end_frame, "Label", label)
                         
                         if self.output_video_type == "Images":                                                             
-                            for image in sliding_window:                                                
+                            for image in full_frame_sliding_window:                                                
                                 if self.prediction_model.is_categorical:
                                     # Categorical Writing
-                                    self.writer.writeToImagesCategorical(image, start_frame, subject, label)  
+                                    self.writer.writeToImagesCategorical(image, start_frame, subject, label, self.categorical_class_names)  
                                 else:
                                     # Binary Writing
-                                    self.writer.writeToImages(image, start_frame, subject, label)                                                                        
+                                    self.writer.writeToImages(image, start_frame, subject, label, self.binary_class_names)                                                                        
                                 start_frame += 1   
                         elif self.output_video_type == "Video":
                             # Video
@@ -381,7 +376,60 @@ class VideoThread(QThread):
                                                                                                             
                         sliding_window = []
                         norm_sliding_window = []  
-                        full_frame_sliding_window = []                                                
+                        full_frame_sliding_window = []  
+                    elif stride == 6:
+                        print("Stride 6")                        
+                        # 6 Strides
+                        if self.prediction_model.is_categorical:
+                            self.report.addPredictions_Categorical(self.categorical_class_names, start_frame, end_frame, conf, label)
+                        else:
+                            self.report.addPredictions_Binary(self.binary_class_names, start_frame, end_frame, conf, label)
+                        print("Label of frame", start_frame, "to", end_frame, "Label", label)
+                        
+                        if self.output_video_type == "Images":    
+                            counter = 0                                                         
+                            for image in full_frame_sliding_window: 
+                                if counter == 6:
+                                    break
+                                counter += 1                                               
+                                if self.prediction_model.is_categorical:
+                                    # Categorical Writing
+                                    self.writer.writeToImagesCategorical(image, start_frame, subject, label)  
+                                else:
+                                    # Binary Writing
+                                    self.writer.writeToImages(image, start_frame, subject, label)                                                                        
+                                start_frame += 1   
+
+                        elif self.output_video_type == "Video":
+                            # Video
+                            counter = 0  
+                            for image in full_frame_sliding_window: 
+                                if counter == 6:
+                                    break
+                                counter += 1 
+                                if self.prediction_model.is_categorical:                      
+                                    self.writer.writeToVideo(image, subject, label, itr, self.categorical_class_names)
+                                else:
+                                    self.writer.writeToVideo(image, subject, label, itr, self.binary_class_names)
+                                start_frame += 1  
+                        elif self.output_video_type == "Clip":
+                            # Clip
+                            counter = 0  
+                            for image in full_frame_sliding_window:
+                                if counter == 6:
+                                    break
+                                counter += 1   
+                                if self.prediction_model.is_categorical:                      
+                                    self.writer.writeToClip(image, subject, label, itr, self.categorical_class_names)
+                                else:
+                                    self.writer.writeToClip(image, subject, label, itr, self.binary_class_names)
+                                start_frame += 1  
+
+                        # JANGAN LUPA GAMBAR 6 PERTAMA LALU HAPUS
+                        for i in range(0, 6):                                        
+                            sliding_window.pop(0)
+                            norm_sliding_window.pop(0) 
+                            full_frame_sliding_window .pop(0)           
                     else:
                         # 1 Strides
                         if write_itr != itr:                        
@@ -594,7 +642,7 @@ class VideoThread(QThread):
 class VideoWindow(QMainWindow):
     def __init__(self, parent=None):
         super(VideoWindow, self).__init__(parent)        
-        self.setWindowTitle("ISpeak Public Speaking expressions Detection")
+        self.setWindowTitle("ISpeak")
         self.disply_width = 640
         self.display_height = 480
         self.filename = '' 
@@ -743,7 +791,6 @@ class VideoWindow(QMainWindow):
             print("Recording Start")
             self.append_output_log("Recording Start") 
             self.thread.setStartRecord(True) 
-
             self.uploadButton.setEnabled(False)           
             self.processButton.setEnabled(False)           
             self.playButton.setEnabled(False)           
@@ -760,7 +807,7 @@ class VideoWindow(QMainWindow):
         else:
             self.filename = filename  
             self.thread.set_filename(self.filename)
-            self.thread.setInterruptCurrentProcess(True)  
+            self.thread.setInterruptCurrentProcess(True)             
                           
 
     def exitCall(self):

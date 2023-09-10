@@ -60,7 +60,7 @@ class CNNLSTM:
         rnn = tf.keras.models.Sequential()
         rnn.add(tf.keras.layers.TimeDistributed(cnn))
         rnn.add(tf.keras.layers.LSTM(32))
-        rnn.add(tf.keras.layers.Dense(6, activation="softmax"))
+        rnn.add(tf.keras.layers.Dense(10, activation="softmax"))
         # rnn.add(tf.keras.layers.Dense(10, activation="softmax"))
 
 
@@ -72,8 +72,8 @@ class CNNLSTM:
         
         rnn.load_weights(weights_path).expect_partial()    
         self.model = rnn          
-        # self.model = self.compile_model_categorical(self.model)
-        self.model = self.compile_model_categorical_focal_loss(self.model)
+        self.model = self.compile_model_categorical(self.model)
+        # self.model = self.compile_model_categorical_focal_loss(self.model)
         self.is_categorical = True
 
     def categorical_focal_loss(self, alpha, gamma=2.):

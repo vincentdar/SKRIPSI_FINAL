@@ -13,3 +13,4 @@ shape_predictor_68_face_landmarks.dat
 /output
 /results_clip
 /training/nvvm
+/results_binary

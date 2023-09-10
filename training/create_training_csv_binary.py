@@ -62,21 +62,29 @@ def create_training_csv_multiclass(data_path, label_path, sheet_name, writer):
                                                                                         
 
 if __name__ == "__main__":    
-    # Training
-    filewriter = open('training_pubspeak_25042023_face_detection.csv',  'w')
-    filewriter.write("1,2,3,4,5,6,7,8,9,10,11,12,Label\n")
-    create_training_csv_multiclass( "D:\Dataset Skripsi Batch Final Image Face Detection",
-                                    "D:\CodeProject2\SKRIPSI_FINAL\pubspeak_label_25042023.xlsx",
-                                    "Training",
-                                    filewriter)
-    filewriter.close()
+    # # Training
+    # filewriter = open('training_pubspeak_25042023_face_detection.csv',  'w')
+    # filewriter.write("1,2,3,4,5,6,7,8,9,10,11,12,Label\n")
+    # create_training_csv_multiclass( "D:\Dataset Skripsi Batch Final Image Face Detection",
+    #                                 "D:\CodeProject2\SKRIPSI_FINAL\pubspeak_label_25042023.xlsx",
+    #                                 "Training",
+    #                                 filewriter)
+    # filewriter.close()
 
-    # Testing
-    filewriter = open('testing_pubspeak_25042023_face_detection.csv',  'w')
+    # # Testing
+    # filewriter = open('testing_pubspeak_25042023_face_detection.csv',  'w')
+    # filewriter.write("1,2,3,4,5,6,7,8,9,10,11,12,Label\n")
+    # create_training_csv_multiclass( "D:\Dataset Skripsi Batch Final Image Face Detection",
+    #                                 "D:\CodeProject2\SKRIPSI_FINAL\pubspeak_label_25042023.xlsx",
+    #                                 "Testing",
+    #                                 filewriter)
+    # filewriter.close()
+
+    filewriter = open('testing_S168.csv',  'w')
     filewriter.write("1,2,3,4,5,6,7,8,9,10,11,12,Label\n")
     create_training_csv_multiclass( "D:\Dataset Skripsi Batch Final Image Face Detection",
-                                    "D:\CodeProject2\SKRIPSI_FINAL\pubspeak_label_25042023.xlsx",
-                                    "Testing",
+                                    "D:\CodeProject2\SKRIPSI_FINAL\pubspeak_label_BARU.xlsx",
+                                    "Warna Kulit",
                                     filewriter)
     filewriter.close()
     
